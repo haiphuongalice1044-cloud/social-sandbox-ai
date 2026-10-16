@@ -531,11 +531,7 @@ page = st.sidebar.radio(
 st.sidebar.divider()
 st.sidebar.markdown(
     """
-    <div class="muted">
-    Dự án nghiên cứu giáo dục<br>
-    AI hỗ trợ, con người quyết định.<br><br>
-    Dữ liệu lịch sử hiện lưu trong phiên sử dụng.
-    </div>
+  
     """,
     unsafe_allow_html=True,
 )
