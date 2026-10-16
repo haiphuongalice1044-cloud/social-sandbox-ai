@@ -343,7 +343,7 @@ def analyze_with_gemini(text):
     if not api_key:
         return None, "Chưa cấu hình GEMINI_API_KEY trong Streamlit Secrets."
 
-    model = "gemini-2.5-flash"
+    model = "gemini-3.5-flash"
     url = (
         "https://generativelanguage.googleapis.com/v1beta/"
         + "models/" + model + ":generateContent"
