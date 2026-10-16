@@ -346,30 +346,26 @@ Không yêu cầu người dùng cung cấp mật khẩu, mã OTP hay thông tin
 
         return response.text, None
 
-    except Exception as error:
-        # Không hiển thị API key hay thông tin bí mật trong thông báo lỗi.
+        except Exception as error:
+        error_type = type(error).__name__
         message = str(error).lower()
 
         if "quota" in message or "429" in message or "rate" in message:
             return None, (
-                "Gemini đang hết hạn mức hoặc giới hạn lượt dùng. "
-                "Website sẽ không tự chuyển sang dịch vụ trả phí. "
+                "Gemini đã hết hạn mức hoặc bị giới hạn lượt dùng. "
                 "Em hãy thử lại sau."
             )
 
         if "api key" in message or "permission" in message or "403" in message:
             return None, (
-                "Không thể xác thực Gemini API key. "
-                "Quản trị viên cần kiểm tra Secrets và quyền truy cập."
+                "Gemini không xác thực được API key. "
+                "Hãy kiểm tra mục Secrets trên Streamlit Cloud."
             )
 
         return None, (
-            "Chưa kết nối được Gemini. Có thể mô hình không khả dụng "
-            "với tài khoản hiện tại hoặc đang có lỗi kết nối. "
-            "Em thử lại sau nhé."
+            f"Lỗi Gemini ({error_type}). "
+            "Hãy kiểm tra nhật ký ứng dụng trên Streamlit Cloud."
         )
-
-
 # ---------- THANH ĐIỀU HƯỚNG ----------
 st.sidebar.markdown("# 🛡️ Social Sandbox AI")
 st.sidebar.caption("Không gian thực hành xác thực thông tin số")
