@@ -11,7 +11,7 @@ import streamlit as st
 # =========================================================
 
 st.set_page_config(
-    page_title="Simulated Social Sandbox",
+    page_title="Social Sandbox AI",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded",
