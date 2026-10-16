@@ -1,1340 +1,682 @@
 
-import re
-import html
 import random
+import re
 from datetime import datetime
-from urllib.parse import urlparse
 
-import pandas as pd
 import streamlit as st
-
-# =========================================================
-# SOCIAL SANDBOX AI
-# =========================================================
-
-PROJECT_TITLE = (
-    "Nghiên cứu hành vi xác thực thông tin số của học sinh "
-    "trung học và xây dựng hệ thống can thiệp thích ứng "
-    "ứng dụng trí tuệ nhân tạo"
-)
 
 st.set_page_config(
     page_title="Xác thực thông tin số | Social Sandbox AI",
     page_icon="🛡️",
     layout="wide",
-    initial_sidebar_state="expanded",
 )
 
+# ---------- GIAO DIỆN ----------
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
-
-:root {
-    --bg: #0b1020;
-    --panel: #141d32;
-    --line: #2b3a57;
-    --text: #edf2ff;
-    --muted: #a8b5ce;
-    --purple: #a78bfa;
-    --cyan: #67e8f9;
-}
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
 
 html, body, [class*="css"] {
     font-family: 'Be Vietnam Pro', sans-serif;
 }
-
 .stApp {
     background:
-        radial-gradient(circle at 90% 0%, #292650 0, transparent 34%),
-        linear-gradient(135deg, #080d19, #10182b);
-    color: var(--text);
+        radial-gradient(ellipse at 0% 0%, #20245b 0%, transparent 42%),
+        linear-gradient(140deg, #080d1c, #10152c 60%, #11102b);
+    color: #f3f5ff;
 }
-
 .block-container {
-    max-width: 1250px;
-    padding-top: 1.5rem;
+    max-width: 1150px;
+    padding-top: 2rem;
     padding-bottom: 3rem;
 }
-
-h1, h2, h3 {
-    font-family: 'Space Grotesk', 'Be Vietnam Pro', sans-serif !important;
+[data-testid="stSidebar"] {
+    background: #0b1021;
+    border-right: 1px solid #292f51;
 }
-
-.hero {
-    padding: 30px;
-    border-radius: 24px;
-    border: 1px solid #474779;
-    background: linear-gradient(120deg, #202344, #122738);
-    margin-bottom: 22px;
-}
-
-.hero-label {
-    color: var(--cyan);
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 2px;
-}
-
-.hero h1 {
-    color: white;
-    font-size: clamp(27px, 4vw, 43px);
-    line-height: 1.3;
-}
-
-.hero p {
-    color: #c5d0e5;
-    line-height: 1.8;
-}
-
-.panel {
-    padding: 20px;
-    border-radius: 18px;
-    background: rgba(20, 29, 50, 0.92);
-    border: 1px solid var(--line);
-    margin-bottom: 12px;
-}
-
-.pill {
-    display: inline-block;
-    background: #222d49;
-    color: #d8ddff;
-    border: 1px solid #3a496a;
-    padding: 5px 10px;
-    margin: 3px;
-    border-radius: 30px;
-    font-size: 12px;
-}
-
-.muted {
-    color: var(--muted);
-    font-size: 13px;
-}
-
-.result-high {
-    padding: 20px;
-    border-radius: 17px;
-    border: 1px solid #fb7185;
-    background: rgba(251, 113, 133, 0.10);
-}
-
-.result-medium {
-    padding: 20px;
-    border-radius: 17px;
-    border: 1px solid #fbbf24;
-    background: rgba(251, 191, 36, 0.09);
-}
-
-.result-low {
-    padding: 20px;
-    border-radius: 17px;
-    border: 1px solid #34d399;
-    background: rgba(52, 211, 153, 0.08);
-}
-
-div.stButton > button,
-div.stDownloadButton > button {
-    min-height: 44px;
+h1, h2, h3 { color: #f5f6ff; }
+p, li, label { line-height: 1.7; }
+div.stButton > button {
     border-radius: 12px;
+    min-height: 44px;
+    border: 1px solid #6565dd;
+    background: linear-gradient(100deg, #5555ce, #7763e8);
+    color: white;
     font-weight: 700;
 }
-
-div[data-testid="stMetric"] {
-    background: rgba(20, 29, 50, 0.9);
-    border: 1px solid var(--line);
-    padding: 15px;
-    border-radius: 15px;
+div.stButton > button:hover {
+    border-color: #72e5ff;
+    color: white;
 }
-
-section[data-testid="stSidebar"] {
-    background: #0b1222;
-    border-right: 1px solid var(--line);
+[data-testid="stTextArea"] textarea {
+    background: #10172b;
+    color: #f3f5ff;
+    border: 1px solid #444c75;
+    border-radius: 12px;
 }
-
-hr {
-    border-color: var(--line);
+.panel {
+    background: rgba(25, 32, 62, .85);
+    border: 1px solid #343c65;
+    border-radius: 18px;
+    padding: 22px;
+    margin-bottom: 15px;
 }
-
-footer {
-    visibility: hidden;
-}
+.muted { color: #b8c1df; }
+.small { font-size: 0.9rem; color: #b8c1df; }
 </style>
 """, unsafe_allow_html=True)
 
 
-# =========================================================
-# KHỞI TẠO DỮ LIỆU PHIÊN
-# =========================================================
-
-defaults = {
+# ---------- TRẠNG THÁI ----------
+for key, default in {
     "history": [],
-    "last_result": None,
-    "draft": "",
-    "quiz_before": None,
-    "quiz_after": None,
-    "survey_history": [],
-    "scenario_current": None,
-    "scenario_seen": [],
-    "scenario_answered": {},
-    "scenario_feedback": {},
+    "content_input": "",
+    "current_scenario": None,
+    "seen_scenarios": [],
+    "scenario_result": None,
+    "survey_results": [],
+}.items():
+    if key not in st.session_state:
+        st.session_state[key] = default
+
+
+# ---------- CÁC TÌNH HUỐNG THỰC HÀNH ----------
+SCENARIOS = [
+    {
+        "title": "Tin nhắn giả mạo ngân hàng",
+        "text": "Tài khoản của bạn sẽ bị khóa sau 10 phút. Bấm đường link dưới đây và nhập mật khẩu, mã OTP để xác minh ngay.",
+        "choices": [
+            "Bấm link và nhập thông tin",
+            "Gửi mã OTP cho người nhắn",
+            "Không bấm link, kiểm tra qua ứng dụng hoặc kênh chính thức của ngân hàng",
+            "Chuyển tiếp cho tất cả bạn bè",
+        ],
+        "correct": 2,
+        "explain": "Tin nhắn tạo áp lực thời gian và yêu cầu thông tin xác thực. Hãy tự mở ứng dụng hoặc liên hệ ngân hàng qua kênh chính thức."
+    },
+    {
+        "title": "Việc nhẹ lương cao",
+        "text": "Một tài khoản tuyển cộng tác viên online, hứa trả 2 triệu đồng mỗi ngày. Muốn nhận việc, bạn phải nộp phí kích hoạt trước.",
+        "choices": [
+            "Nộp tiền ngay",
+            "Kiểm tra đơn vị tuyển dụng, hợp đồng và yêu cầu phí",
+            "Mượn tiền để tham gia",
+            "Gửi ảnh giấy tờ tùy thân",
+        ],
+        "correct": 1,
+        "explain": "Lời hứa thu nhập cao bất thường và yêu cầu nộp tiền trước là dấu hiệu cần kiểm tra kỹ."
+    },
+    {
+        "title": "Thông báo trúng thưởng",
+        "text": "Bạn được chọn nhận điện thoại miễn phí. Hãy đóng phí vận chuyển ngay và gửi mã xác minh để nhận quà.",
+        "choices": [
+            "Đóng phí ngay",
+            "Gửi mã xác minh",
+            "Kiểm tra chương trình trên trang chính thức, không cung cấp mã bảo mật",
+            "Gửi cho bạn bè cùng tham gia",
+        ],
+        "correct": 2,
+        "explain": "Cần xác minh chương trình và đơn vị tổ chức. Không chia sẻ mã xác minh chỉ vì lời hứa trúng thưởng."
+    },
+    {
+        "title": "Bạn bè nhờ chuyển tiền",
+        "text": "Một tài khoản giống tài khoản bạn thân nhắn rằng đang gặp việc gấp, cần chuyển tiền ngay và không được gọi điện.",
+        "choices": [
+            "Chuyển tiền vì là bạn thân",
+            "Gọi qua số hoặc tài khoản đã biết để xác nhận",
+            "Gửi thêm thông tin ngân hàng",
+            "Làm theo vì người nhắn đang vội",
+        ],
+        "correct": 1,
+        "explain": "Tài khoản có thể bị chiếm quyền hoặc bị giả mạo. Hãy xác nhận bằng một kênh liên lạc độc lập."
+    },
+    {
+        "title": "Mua hàng giá rẻ bất thường",
+        "text": "Một cửa hàng mới lập bán điện thoại giá thấp hơn nhiều nơi khác, yêu cầu chuyển khoản trước và không có thông tin đổi trả.",
+        "choices": [
+            "Chuyển khoản ngay",
+            "Kiểm tra lịch sử cửa hàng, đánh giá độc lập và chính sách mua hàng",
+            "Gửi ảnh thẻ ngân hàng",
+            "Tin vì bài đăng có nhiều lượt thích",
+        ],
+        "correct": 1,
+        "explain": "Giá quá thấp, thiếu thông tin và chỉ nhận chuyển khoản là các yếu tố cần kiểm chứng."
+    },
+    {
+        "title": "Đầu tư lợi nhuận cao",
+        "text": "Một nhóm chat cam kết đầu tư 1 triệu đồng sẽ nhận lại 3 triệu đồng sau vài ngày, đồng thời yêu cầu mời thêm thành viên.",
+        "choices": [
+            "Đầu tư toàn bộ tiền tiết kiệm",
+            "Mượn tiền để đầu tư",
+            "Tìm hiểu độc lập về đơn vị và rủi ro; không tin cam kết lợi nhuận chắc chắn",
+            "Mời bạn bè tham gia ngay",
+        ],
+        "correct": 2,
+        "explain": "Lợi nhuận cao được bảo đảm trong thời gian ngắn là lời hứa đáng nghi. Không nên quyết định chỉ dựa vào nhóm chat."
+    },
+    {
+        "title": "Tin nhắn giao hàng",
+        "text": "Bạn nhận tin nhắn yêu cầu trả thêm phí nhỏ để nhận bưu kiện, kèm một đường link lạ không thuộc trang giao hàng quen thuộc.",
+        "choices": [
+            "Bấm link và nhập thông tin thẻ",
+            "Kiểm tra mã vận đơn trên ứng dụng hoặc trang chính thức của đơn vị giao hàng",
+            "Gửi mã OTP cho người nhắn",
+            "Chuyển tiếp tin nhắn cho mọi người",
+        ],
+        "correct": 1,
+        "explain": "Không dùng đường link lạ để thanh toán. Hãy kiểm tra đơn hàng qua kênh chính thức."
+    },
+    {
+        "title": "Ứng dụng yêu cầu quyền bất thường",
+        "text": "Một ứng dụng không rõ nhà phát triển yêu cầu quyền đọc tin nhắn, danh bạ và hỗ trợ truy cập để nhận phần thưởng.",
+        "choices": [
+            "Cấp mọi quyền được yêu cầu",
+            "Kiểm tra nhà phát triển và quyền truy cập; không cài nếu không đáng tin",
+            "Gửi mật khẩu cho nhà phát triển",
+            "Tắt mọi cảnh báo bảo mật",
+        ],
+        "correct": 1,
+        "explain": "Chỉ cấp quyền cần thiết cho ứng dụng đáng tin cậy. Phần thưởng không phải lý do để bỏ qua quyền riêng tư."
+    },
+    {
+        "title": "Tin tức gây sốc",
+        "text": "Một bài đăng khẳng định trường học sẽ đóng cửa ngày mai, nhưng không nêu nguồn và kêu gọi chia sẻ gấp cho mọi người.",
+        "choices": [
+            "Chia sẻ ngay để cảnh báo",
+            "Tin vì nhiều người đã bình luận",
+            "Kiểm tra thông báo từ trường và đối chiếu nguồn độc lập",
+            "Thêm nội dung giật gân để nhiều người chú ý",
+        ],
+        "correct": 2,
+        "explain": "Cảm xúc mạnh và nhiều lượt tương tác không chứng minh tin là đúng. Hãy tìm thông báo từ nguồn có trách nhiệm."
+    },
+    {
+        "title": "Giả danh cơ quan chức năng",
+        "text": "Người gọi tự nhận là cán bộ, yêu cầu giữ bí mật, cung cấp thông tin cá nhân và chuyển tiền để giải quyết một vụ việc.",
+        "choices": [
+            "Làm theo ngay",
+            "Cung cấp tất cả thông tin",
+            "Kết thúc cuộc gọi và tự xác minh qua kênh chính thức",
+            "Gửi ảnh giấy tờ qua tin nhắn",
+        ],
+        "correct": 2,
+        "explain": "Không làm theo yêu cầu chuyển tiền hay cung cấp dữ liệu nhạy cảm chỉ dựa trên cuộc gọi chưa xác minh."
+    },
+    {
+        "title": "Học bổng không rõ nguồn",
+        "text": "Một trang lạ hứa cấp học bổng lớn, yêu cầu nộp phí hồ sơ và tải ảnh giấy tờ cá nhân lên một đường link.",
+        "choices": [
+            "Nộp phí để giữ suất",
+            "Tìm thông báo từ trường hoặc đơn vị cấp học bổng chính thức",
+            "Gửi thêm dữ liệu cá nhân",
+            "Chia sẻ cho cả lớp trước khi kiểm tra",
+        ],
+        "correct": 1,
+        "explain": "Xác minh đơn vị cấp học bổng, điều kiện và quy trình qua trang chính thức trước khi gửi dữ liệu."
+    },
+    {
+        "title": "Đường link đăng nhập lạ",
+        "text": "Một người gửi link có tên gần giống mạng xã hội quen thuộc và yêu cầu đăng nhập để xem một video đang gây chú ý.",
+        "choices": [
+            "Đăng nhập để xem",
+            "Nhập mật khẩu rồi kiểm tra sau",
+            "Không mở link đáng nghi; tự truy cập ứng dụng hoặc trang chính thức",
+            "Gửi link cho bạn bè thử trước",
+        ],
+        "correct": 2,
+        "explain": "Tên miền giả có thể giống tên thật. Tự mở ứng dụng chính thức thay vì đăng nhập qua link được gửi."
+    },
+]
+
+
+# ---------- PHÂN TÍCH QUY TẮC DỰ PHÒNG ----------
+RULES = {
+    "Mã OTP và mật khẩu": [
+        "otp", "mật khẩu", "mat khau", "mã xác minh",
+        "ma xac minh", "password", "đăng nhập"
+    ],
+    "Chuyển tiền và phí trước": [
+        "chuyển tiền", "chuyen tien", "nộp phí", "nop phi",
+        "phí kích hoạt", "phi kich hoat", "đóng phí", "dong phi"
+    ],
+    "Khẩn cấp và đe dọa": [
+        "ngay lập tức", "ngay lap tuc", "khẩn cấp", "khan cap",
+        "bị khóa", "bi khoa", "10 phút", "10 phut", "giữ bí mật"
+    ],
+    "Trúng thưởng và lợi nhuận": [
+        "trúng thưởng", "trung thuong", "lợi nhuận", "loi nhuan",
+        "lương cao", "luong cao", "cam kết lợi nhuận"
+    ],
+    "Thông tin cá nhân": [
+        "căn cước", "can cuoc", "số tài khoản", "so tai khoan",
+        "danh bạ", "danh ba", "giấy tờ", "giay to"
+    ],
+    "Đường link cần kiểm tra": [
+        "http://", "bit.ly", "tinyurl", "click vào", "click vao"
+    ],
 }
 
-for key, value in defaults.items():
-    if key not in st.session_state:
-        st.session_state[key] = value
 
+def rule_analysis(text):
+    lower = text.lower()
+    matched = []
 
-# =========================================================
-# BỘ QUY TẮC PHÁT HIỆN DẤU HIỆU ĐÁNG NGỜ
-# =========================================================
+    for category, words in RULES.items():
+        found = [word for word in words if word in lower]
+        if found:
+            matched.append((category, found[:4]))
 
-RULES = [
-    {
-        "name": "Yêu cầu OTP hoặc mật khẩu",
-        "keywords": [
-            "mã otp", "otp", "mã xác thực", "mã xác minh",
-            "mật khẩu", "password", "mã pin"
-        ],
-        "weight": 28,
-        "reason": "Thông tin xác thực có thể bị lợi dụng để chiếm quyền truy cập."
-    },
-    {
-        "name": "Thúc ép chuyển tiền",
-        "keywords": [
-            "chuyển khoản ngay", "chuyển tiền ngay",
-            "nạp tiền trước", "đóng phí", "phí nhận quà",
-            "phí xác minh", "đặt cọc trước", "phí giải ngân"
-        ],
-        "weight": 25,
-        "reason": "Yêu cầu chuyển tiền gấp hoặc trả phí trước cần được xác minh."
-    },
-    {
-        "name": "Trúng thưởng hoặc quà tặng",
-        "keywords": [
-            "trúng thưởng", "bạn đã trúng", "nhận quà miễn phí",
-            "nhận giải thưởng", "chúc mừng bạn đã trúng",
-            "nhận thưởng", "phí nhận thưởng"
-        ],
-        "weight": 18,
-        "reason": "Phần thưởng bất ngờ có thể được dùng để dụ chuyển tiền."
-    },
-    {
-        "name": "Đầu tư lợi nhuận cao",
-        "keywords": [
-            "cam kết lợi nhuận", "lãi chắc chắn", "không rủi ro",
-            "lợi nhuận 100%", "nhân đôi tài khoản", "lãi khủng",
-            "lợi nhuận bảo đảm"
-        ],
-        "weight": 25,
-        "reason": "Lời hứa lợi nhuận cao và chắc chắn cần được kiểm chứng."
-    },
-    {
-        "name": "Giả danh ngân hàng hoặc cơ quan",
-        "keywords": [
-            "tài khoản bị khóa", "xác minh tài khoản",
-            "công an yêu cầu", "cơ quan chức năng",
-            "vi phạm pháp luật", "ngân hàng thông báo",
-            "cơ quan thuế"
-        ],
-        "weight": 18,
-        "reason": "Kẻ gian có thể giả danh tổ chức đáng tin để gây áp lực."
-    },
-    {
-        "name": "Tuyển dụng đáng ngờ",
-        "keywords": [
-            "việc nhẹ lương cao", "nạp tiền làm nhiệm vụ",
-            "tuyển cộng tác viên", "nhận hoa hồng",
-            "chốt đơn nhận tiền", "làm nhiệm vụ nhận tiền"
-        ],
-        "weight": 20,
-        "reason": "Công việc yêu cầu nạp tiền hoặc trả phí trước cần được kiểm tra."
-    },
-    {
-        "name": "Giả danh người quen",
-        "keywords": [
-            "mượn tiền gấp", "đang cấp cứu", "đừng gọi lại",
-            "giữ bí mật", "chuyển tiền giúp", "đang rất cần tiền"
-        ],
-        "weight": 22,
-        "reason": "Tài khoản người quen có thể bị chiếm quyền."
-    },
-    {
-        "name": "Mua bán trực tuyến đáng ngờ",
-        "keywords": [
-            "thanh toán ngoài nền tảng", "chuyển khoản để giữ hàng",
-            "giá rẻ bất thường", "phí giao hàng hoàn tiền",
-            "hoàn tiền đơn hàng"
-        ],
-        "weight": 16,
-        "reason": "Cần kiểm tra người bán và phương thức thanh toán."
-    },
-    {
-        "name": "Vay tiền và phí trước",
-        "keywords": [
-            "phí giải ngân", "phí mở hồ sơ", "vay nhanh",
-            "xóa nợ xấu", "vay không cần gặp mặt", "duyệt vay ngay"
-        ],
-        "weight": 20,
-        "reason": "Cần xác minh đơn vị cho vay và các khoản phí."
-    },
-    {
-        "name": "Thúc ép hoặc đe dọa",
-        "keywords": [
-            "ngay lập tức", "khẩn cấp", "sắp hết hạn",
-            "trong 5 phút", "nếu không sẽ", "lần cuối",
-            "không làm sẽ bị khóa"
-        ],
-        "weight": 12,
-        "reason": "Ngôn ngữ gây áp lực có thể khiến người nhận quyết định vội."
-    },
-    {
-        "name": "Ứng dụng hoặc quyền truy cập lạ",
-        "keywords": [
-            "tải file apk", "chia sẻ màn hình", "điều khiển từ xa",
-            "cấp quyền truy cập", "cài ứng dụng lạ",
-            "cài app theo hướng dẫn"
-        ],
-        "weight": 22,
-        "reason": "Ứng dụng và quyền truy cập không rõ nguồn có thể làm lộ dữ liệu."
-    },
-]
+    urls = re.findall(r"https?://\S+", text, flags=re.IGNORECASE)
+    url_notes = []
 
-URL_PATTERN = re.compile(
-    r'https?://[^\s<>"\']+|www\.[^\s<>"\']+',
-    re.IGNORECASE
-)
+    for url in urls:
+        if url.lower().startswith("http://"):
+            url_notes.append("Đường link dùng HTTP, không phải HTTPS.")
+        if "xn--" in url.lower():
+            url_notes.append("Tên miền có ký tự mã hóa, cần kiểm tra cẩn thận.")
+        if len(url) > 100:
+            url_notes.append("Đường link dài bất thường.")
 
-SUSPICIOUS_TLDS = (
-    ".top", ".xyz", ".click", ".work",
-    ".monster", ".zip", ".country"
-)
-
-
-def analyze_content(text):
-    raw = text.strip()
-    low = raw.lower()
-    findings = []
-    score = 0
-
-    for rule in RULES:
-        hits = [
-            word for word in rule["keywords"]
-            if word in low
-        ]
-        if hits:
-            findings.append({
-                "name": rule["name"],
-                "hits": hits[:5],
-                "reason": rule["reason"],
-            })
-            score += rule["weight"]
-
-    urls = []
-    for found in URL_PATTERN.findall(raw):
-        candidate = found.rstrip(".,;:!?)\"]}")
-        normalized = (
-            candidate if candidate.lower().startswith(
-                ("http://", "https://")
-            ) else "https://" + candidate
-        )
-        parsed = urlparse(normalized)
-        host = (parsed.hostname or "").lower()
-        flags = []
-
-        if parsed.scheme == "http":
-            flags.append("Sử dụng HTTP; cần thận trọng với dữ liệu.")
-            score += 8
-
-        if host:
-            if host.startswith("xn--") or ".xn--" in host:
-                flags.append("Tên miền có dạng mã hóa ký tự.")
-                score += 15
-
-            if any(host.endswith(tld) for tld in SUSPICIOUS_TLDS):
-                flags.append("Đuôi tên miền cần được xác minh.")
-                score += 8
-
-            if re.search(r"\d{5,}", host):
-                flags.append("Tên miền chứa chuỗi số dài.")
-                score += 6
-
-            if host.count("-") >= 2:
-                flags.append("Tên miền có nhiều dấu gạch nối.")
-                score += 5
-
-            if not flags:
-                flags.append(
-                    "Chưa thấy dấu hiệu rõ ràng qua kiểm tra URL cơ bản."
-                )
-
-        urls.append({
-            "url": candidate,
-            "host": host or "Không xác định",
-            "flags": flags,
-        })
-
-    score = min(100, score)
+    score = min(95, len(matched) * 16 + len(url_notes) * 12)
 
     if score >= 55:
-        level = "Cảnh báo cao"
-        css = "result-high"
-        headline = "Có nhiều dấu hiệu cần cảnh giác"
-        advice = (
-            "Tạm dừng thao tác. Không chuyển tiền, nhập OTP hoặc mật khẩu, "
-            "không tải tệp và không cấp quyền truy cập. Hãy xác minh qua "
-            "kênh chính thức do em tự tìm."
-        )
+        level = "Nhiều dấu hiệu đáng nghi"
     elif score >= 25:
-        level = "Cần kiểm tra thêm"
-        css = "result-medium"
-        headline = "Nội dung có dấu hiệu đáng ngờ"
-        advice = (
-            "Chưa nên làm theo ngay. Kiểm tra nguồn gửi, địa chỉ website "
-            "và đối chiếu thông tin qua nguồn độc lập."
-        )
+        level = "Cần kiểm chứng thêm"
     else:
-        level = "Chưa thấy nhiều dấu hiệu"
-        css = "result-low"
-        headline = "Chưa phát hiện nhiều dấu hiệu theo bộ quy tắc"
-        advice = (
-            "Điều này không chứng minh nội dung an toàn. Hãy kiểm tra "
-            "nguồn, đường link và bảo vệ thông tin nhạy cảm."
-        )
+        level = "Chưa phát hiện nhiều dấu hiệu theo quy tắc"
 
     return {
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "level": level,
-        "css": css,
-        "headline": headline,
-        "advice": advice,
         "score": score,
-        "findings": findings,
-        "urls": urls,
-        "preview": raw[:200],
+        "level": level,
+        "matched": matched,
+        "url_notes": url_notes,
     }
 
 
-def save_history(result):
-    st.session_state.history.insert(0, {
-        "Thời gian": result["timestamp"],
-        "Kết quả": result["level"],
-        "Điểm quy tắc": result["score"],
-        "Nội dung rút gọn": result["preview"],
-    })
+# ---------- KẾT NỐI GEMINI ----------
+def get_api_key():
+    try:
+        return st.secrets.get("GEMINI_API_KEY", "")
+    except Exception:
+        return ""
 
 
-# =========================================================
-# 12 TÌNH HUỐNG LUYỆN TẬP
-# =========================================================
+def ask_gemini(text):
+    api_key = get_api_key()
+    if not api_key:
+        return None, (
+            "Chưa cấu hình Gemini API key. "
+            "Quản trị viên cần thêm GEMINI_API_KEY trong Secrets của Streamlit Cloud."
+        )
 
-CASES = [
-    {
-        "category": "🏦 Giả danh ngân hàng",
-        "title": "Tài khoản của em sắp bị khóa?",
-        "text": (
-            "Vào lúc 9 giờ tối, em nhận được tin nhắn thông báo tài khoản "
-            "ngân hàng sẽ bị tạm khóa vì chưa cập nhật thông tin. Tin nhắn "
-            "yêu cầu truy cập đường link để xác minh trong vòng 10 phút. "
-            "Trang web có logo gần giống ngân hàng và yêu cầu tên đăng nhập, "
-            "mật khẩu cùng mã OTP. Em không thực hiện giao dịch nào trước đó."
-        ),
-        "options": [
-            "Nhập đủ thông tin để tránh bị khóa.",
-            "Bấm link nhưng chỉ nhập tên đăng nhập.",
-            "Không nhập dữ liệu; tự mở ứng dụng ngân hàng chính thức hoặc liên hệ ngân hàng qua kênh đã xác minh.",
-            "Chuyển tiếp tin nhắn cho bạn bè để hỏi."
-        ],
-        "answer": 2,
-        "why": (
-            "Kẻ gian có thể giả danh ngân hàng để lấy thông tin đăng nhập "
-            "và OTP. Logo không chứng minh website là thật. Hãy tự mở ứng "
-            "dụng hoặc website chính thức thay vì dùng link trong tin nhắn."
-        ),
-        "lesson": "Không cung cấp mật khẩu hoặc OTP qua đường link bất ngờ."
-    },
-    {
-        "category": "💼 Tuyển dụng trực tuyến",
-        "title": "Việc nhẹ, lương cao tại nhà",
-        "text": (
-            "Một tài khoản đăng tuyển cộng tác viên đặt đơn hàng ảo và nhận "
-            "hoa hồng. Họ gửi ảnh chụp những người được cho là đã nhận tiền. "
-            "Sau đó, họ yêu cầu em chuyển trước 200.000 đồng để mở nhiệm vụ "
-            "cấp cao và hứa hoàn lại tiền cùng hoa hồng sau vài phút."
-        ),
-        "options": [
-            "Chuyển tiền vì số tiền ban đầu không lớn.",
-            "Xác minh công ty và không chuyển tiền trước khi xác minh độc lập.",
-            "Mượn tiền bạn để làm nhiệm vụ.",
-            "Gửi ảnh giấy tờ cá nhân để đăng ký."
-        ],
-        "answer": 1,
-        "why": (
-            "Yêu cầu nạp tiền để nhận việc hoặc mở nhiệm vụ là dấu hiệu đáng "
-            "cảnh giác. Ảnh chụp giao dịch có thể không xác thực. Hãy kiểm tra "
-            "đơn vị tuyển dụng và không gửi giấy tờ cá nhân cho bên chưa rõ."
-        ),
-        "lesson": "Không trả tiền chỉ để được nhận việc hoặc hoa hồng."
-    },
-    {
-        "category": "🎁 Trúng thưởng",
-        "title": "Em đã trúng một chiếc điện thoại!",
-        "text": (
-            "Em nhận được tin nhắn báo trúng một chiếc điện thoại đời mới "
-            "trong chương trình quay thưởng mà em không nhớ đã tham gia. "
-            "Người gửi yêu cầu họ tên, địa chỉ và phí vận chuyển trước khi "
-            "hết hạn nhận quà trong ngày."
-        ),
-        "options": [
-            "Thanh toán ngay vì phần quà có giá trị.",
-            "Gửi địa chỉ nhà trước rồi quyết định sau.",
-            "Kiểm tra xem mình có tham gia chương trình và xác minh qua kênh chính thức.",
-            "Nhờ người lạ thanh toán hộ."
-        ],
-        "answer": 2,
-        "why": (
-            "Phần thưởng bất ngờ kèm yêu cầu phí và dữ liệu cá nhân cần "
-            "được xác minh. Thời hạn gấp có thể tạo áp lực khiến em quyết "
-            "định vội vàng."
-        ),
-        "lesson": "Xác minh chương trình trước khi tin thông báo trúng thưởng."
-    },
-    {
-        "category": "👥 Giả danh người quen",
-        "title": "Bạn thân nhắn mượn tiền khẩn cấp",
-        "text": (
-            "Một tài khoản dùng tên và ảnh của bạn thân nhắn rằng họ đang "
-            "gặp việc gấp và cần tiền ngay. Người đó bảo em đừng gọi vì "
-            "không tiện nghe máy. Cách nhắn hơi khác bình thường, nhưng "
-            "tài khoản có nhiều ảnh cũ nên em vẫn phân vân."
-        ),
-        "options": [
-            "Chuyển tiền ngay vì có ảnh bạn thân.",
-            "Yêu cầu họ gửi mã OTP để chứng minh.",
-            "Liên hệ qua số điện thoại hoặc kênh khác đã biết để xác minh.",
-            "Đăng công khai toàn bộ tin nhắn."
-        ],
-        "answer": 2,
-        "why": (
-            "Tài khoản có thể bị chiếm quyền hoặc giả mạo. Ảnh và bài đăng "
-            "cũ không chứng minh người nhắn là chủ tài khoản. Hãy xác minh "
-            "qua một kênh độc lập."
-        ),
-        "lesson": "Xác minh yêu cầu chuyển tiền qua một kênh khác."
-    },
-    {
-        "category": "🛍️ Mua bán trực tuyến",
-        "title": "Món hàng giá rẻ bất thường",
-        "text": (
-            "Một cửa hàng bán tai nghe rẻ hơn nhiều nơi khác. Người bán "
-            "nói chỉ còn một sản phẩm và yêu cầu chuyển khoản trực tiếp "
-            "vào tài khoản cá nhân để giữ hàng. Họ không muốn giao dịch "
-            "qua nền tảng mua sắm và trả lời mơ hồ về chính sách hoàn tiền."
-        ),
-        "options": [
-            "Chuyển tiền ngay để không bỏ lỡ món hời.",
-            "Kiểm tra đánh giá độc lập, thông tin cửa hàng và phương thức thanh toán an toàn.",
-            "Gửi thông tin thẻ ngân hàng qua tin nhắn.",
-            "Mua thêm nhiều món vì giá rẻ."
-        ],
-        "answer": 1,
-        "why": (
-            "Giá bất thường, thúc ép mua ngay và né tránh nền tảng thanh "
-            "toán là các dấu hiệu cần kiểm tra. Chúng không tự chứng minh "
-            "lừa đảo nhưng cần được xem xét cùng nhau."
-        ),
-        "lesson": "Đừng để giá rẻ khiến em bỏ qua bước kiểm tra."
-    },
-    {
-        "category": "📈 Đầu tư trực tuyến",
-        "title": "Lợi nhuận cao, cam kết không rủi ro",
-        "text": (
-            "Một người mới quen trên mạng giới thiệu nền tảng đầu tư và "
-            "khẳng định ai cũng kiếm lợi nhuận lớn mỗi ngày. Họ gửi ảnh "
-            "số dư và lời chứng thực, sau đó nói cơ hội chỉ có hôm nay "
-            "và yêu cầu em nạp tiền ngay để vào nhóm đặc biệt."
-        ),
-        "options": [
-            "Nạp tiền vì có nhiều ảnh chụp lợi nhuận.",
-            "Vay tiền để tận dụng cơ hội.",
-            "Kiểm tra thông tin độc lập, hiểu rủi ro và không quyết định vì áp lực.",
-            "Gửi mật khẩu tài khoản cho người hướng dẫn."
-        ],
-        "answer": 2,
-        "why": (
-            "Lợi nhuận chắc chắn, lời mời gấp và bằng chứng chỉ do người "
-            "quảng bá cung cấp đều cần kiểm chứng. Ảnh chụp có thể không "
-            "xác thực và mọi quyết định tài chính đều có rủi ro."
-        ),
-        "lesson": "Kiểm tra độc lập trước khi quyết định tài chính."
-    },
-    {
-        "category": "📦 Giả mạo giao hàng",
-        "title": "Bưu kiện cần trả thêm phí",
-        "text": (
-            "Em nhận được tin nhắn nói bưu kiện đang chờ giao vì địa chỉ "
-            "chưa đầy đủ. Tin nhắn có link yêu cầu điền địa chỉ và trả "
-            "một khoản phí nhỏ. Em không nhớ có đơn hàng nào đang chờ, "
-            "nhưng người gửi nói bưu kiện sẽ bị hủy nếu em không làm ngay."
-        ),
-        "options": [
-            "Bấm link và điền thông tin.",
-            "Trả phí vì số tiền nhỏ.",
-            "Tự kiểm tra mã vận đơn trên ứng dụng hoặc website chính thức của đơn vị giao hàng.",
-            "Nhập thông tin thẻ để xem bưu kiện."
-        ],
-        "answer": 2,
-        "why": (
-            "Tin nhắn giao hàng giả có thể nhằm thu thập dữ liệu hoặc "
-            "thông tin thanh toán. Nếu không biết có đơn hàng, em nên "
-            "tự kiểm tra qua kênh chính thức."
-        ),
-        "lesson": "Không nhập thông tin thanh toán qua link chưa xác minh."
-    },
-    {
-        "category": "📱 Ứng dụng lạ",
-        "title": "Nhân viên hỗ trợ yêu cầu cài ứng dụng",
-        "text": (
-            "Một người tự xưng là nhân viên hỗ trợ gọi điện nói tài khoản "
-            "của em gặp lỗi. Họ yêu cầu tải ứng dụng từ link bên ngoài "
-            "cửa hàng ứng dụng và bật chia sẻ màn hình. Họ đe dọa rằng "
-            "nếu không làm ngay, tài khoản sẽ bị khóa."
-        ),
-        "options": [
-            "Cài ứng dụng vì người đó biết tên em.",
-            "Bật chia sẻ màn hình để họ xử lý.",
-            "Từ chối cài ứng dụng hoặc cấp quyền; tự liên hệ hỗ trợ chính thức.",
-            "Đọc mọi mã xác thực cho họ."
-        ],
-        "answer": 2,
-        "why": (
-            "Ứng dụng không rõ nguồn và yêu cầu chia sẻ màn hình có thể "
-            "làm lộ dữ liệu. Việc người gọi biết tên em không chứng minh "
-            "họ là nhân viên thật."
-        ),
-        "lesson": "Không cài ứng dụng hoặc cấp quyền cho người chưa xác minh."
-    },
-    {
-        "category": "🎓 Học bổng giả mạo",
-        "title": "Học bổng cần phí xét duyệt",
-        "text": (
-            "Một trang mạng xã hội đăng học bổng cho học sinh và dùng "
-            "tên gần giống một tổ chức giáo dục nổi tiếng. Trang báo "
-            "hồ sơ của em đã được chọn sơ bộ, nhưng yêu cầu đóng phí "
-            "xét duyệt và gửi ảnh giấy tờ trong ngày hôm nay. Em chưa "
-            "tìm thấy thông báo này trên website chính thức."
-        ),
-        "options": [
-            "Thanh toán ngay để không mất cơ hội.",
-            "Gửi giấy tờ trước rồi xác minh sau.",
-            "Tìm thông báo chính thức, liên hệ tổ chức độc lập và hỏi người lớn đáng tin.",
-            "Chia sẻ bài đăng để bạn bè đăng ký."
-        ],
-        "answer": 2,
-        "why": (
-            "Tên và hình ảnh gần giống tổ chức thật có thể bị lợi dụng. "
-            "Yêu cầu phí và giấy tờ cần được xác minh trước khi thực hiện."
-        ),
-        "lesson": "Xác minh học bổng qua kênh chính thức của đơn vị tổ chức."
-    },
-    {
-        "category": "📰 Tin giả",
-        "title": "Bài đăng gây sốc được chia sẻ hàng nghìn lần",
-        "text": (
-            "Em đọc bài đăng nói trường sẽ đóng cửa vào ngày mai vì một "
-            "sự việc nghiêm trọng. Bài viết không ghi nguồn rõ ràng, dùng "
-            "tiêu đề gây sốc và kêu gọi mọi người chia sẻ thật nhanh. "
-            "Nhiều tài khoản đã chia sẻ nhưng em chưa thấy thông báo từ trường."
-        ),
-        "options": [
-            "Chia sẻ ngay vì có nhiều người đã chia sẻ.",
-            "Kiểm tra thông báo của trường và nguồn đáng tin trước khi chia sẻ.",
-            "Viết lại bài cho gây sốc hơn.",
-            "Tin bài viết vì tiêu đề khẩn cấp."
-        ],
-        "answer": 1,
-        "why": (
-            "Lượt chia sẻ lớn không đồng nghĩa với thông tin chính xác. "
-            "Hãy tìm thông báo trực tiếp từ trường hoặc cơ quan có trách nhiệm."
-        ),
-        "lesson": "Kiểm tra nguồn và ngày đăng trước khi chia sẻ."
-    },
-    {
-        "category": "📞 Giả danh cơ quan chức năng",
-        "title": "Cuộc gọi đe dọa liên quan đến giấy tờ",
-        "text": (
-            "Một người gọi điện tự xưng là cán bộ cơ quan chức năng và "
-            "nói thông tin của em liên quan đến một vụ việc. Họ yêu cầu "
-            "em giữ bí mật với gia đình, cung cấp thông tin tài khoản "
-            "hoặc chuyển tiền để chứng minh mình không liên quan. Họ "
-            "không cho em thời gian hỏi người lớn."
-        ),
-        "options": [
-            "Làm theo vì sợ gặp rắc rối.",
-            "Cung cấp thông tin tài khoản để chứng minh mình vô tội.",
-            "Không cung cấp dữ liệu hay chuyển tiền; báo cho người lớn đáng tin và xác minh qua kênh chính thức.",
-            "Giữ bí mật vì người gọi đã yêu cầu."
-        ],
-        "answer": 2,
-        "why": (
-            "Đe dọa, yêu cầu giữ bí mật và đòi dữ liệu hoặc tiền là dấu "
-            "hiệu nghiêm trọng cần cảnh giác. Em nên trao đổi với phụ huynh "
-            "hoặc người lớn đáng tin và kiểm tra thông tin qua kênh chính thức."
-        ),
-        "lesson": "Không để lời đe dọa khiến em chuyển tiền hoặc cung cấp dữ liệu."
-    },
-    {
-        "category": "🔗 Đường link đáng ngờ",
-        "title": "Website có địa chỉ gần giống trang thật",
-        "text": (
-            "Em nhận được một link quảng cáo chương trình giảm giá lớn. "
-            "Tên website gần giống một thương hiệu quen thuộc nhưng có "
-            "thêm dấu gạch nối và vài ký tự lạ. Trang yêu cầu đăng nhập "
-            "bằng tài khoản cá nhân để nhận mã giảm giá, đồng thời thông "
-            "báo mã chỉ có hiệu lực trong vài phút."
-        ),
-        "options": [
-            "Đăng nhập vì tên website trông quen.",
-            "Dùng mật khẩu của tài khoản khác để thử.",
-            "Không đăng nhập; tự tìm website chính thức và so sánh tên miền.",
-            "Gửi link cho bạn để họ đăng nhập thử trước."
-        ],
-        "answer": 2,
-        "why": (
-            "Tên miền giả mạo có thể được tạo để đánh lừa người dùng. "
-            "Biểu tượng ổ khóa hoặc giao diện giống thật không đảm bảo "
-            "đơn vị vận hành đáng tin. Hãy tự tìm trang chính thức."
-        ),
-        "lesson": "Đọc kỹ tên miền và không đăng nhập qua link bất ngờ."
-    },
-]
+    try:
+        from google import genai
+
+        client = genai.Client(api_key=api_key)
+
+        prompt = f"""
+Bạn là trợ lý giáo dục về an toàn thông tin số cho học sinh trung học.
+Hãy phân tích nội dung dưới đây bằng tiếng Việt, dễ hiểu và không phán xét.
+
+Nội dung cần phân tích:
+---
+{text[:7000]}
+---
+
+Trả lời theo cấu trúc:
+1. Tóm tắt nội dung.
+2. Mức độ rủi ro sơ bộ: thấp, trung bình hoặc cao.
+3. Các dấu hiệu đáng chú ý và giải thích cụ thể.
+4. Những điều chưa đủ bằng chứng để kết luận.
+5. Ba bước kiểm chứng an toàn, thực tế.
+6. Một câu hỏi giúp học sinh suy nghĩ phản biện.
+
+Không khẳng định chắc chắn nội dung là lừa đảo nếu chưa đủ bằng chứng.
+Không tuyên bố đã kiểm tra website hoặc nguồn trực tiếp nếu bạn chưa thực sự truy cập.
+Không yêu cầu người dùng cung cấp mật khẩu, mã OTP hay thông tin riêng tư.
+"""
+
+        response = client.models.generate_content(
+            model="gemini-flash-latest",
+            contents=prompt,
+        )
+
+        if not response.text:
+            return None, "AI không trả về nội dung. Em thử lại sau nhé."
+
+        return response.text, None
+
+    except Exception as error:
+        # Không hiển thị API key hay thông tin bí mật trong thông báo lỗi.
+        message = str(error).lower()
+
+        if "quota" in message or "429" in message or "rate" in message:
+            return None, (
+                "Gemini đang hết hạn mức hoặc giới hạn lượt dùng. "
+                "Website sẽ không tự chuyển sang dịch vụ trả phí. "
+                "Em hãy thử lại sau."
+            )
+
+        if "api key" in message or "permission" in message or "403" in message:
+            return None, (
+                "Không thể xác thực Gemini API key. "
+                "Quản trị viên cần kiểm tra Secrets và quyền truy cập."
+            )
+
+        return None, (
+            "Chưa kết nối được Gemini. Có thể mô hình không khả dụng "
+            "với tài khoản hiện tại hoặc đang có lỗi kết nối. "
+            "Em thử lại sau nhé."
+        )
 
 
-# =========================================================
-# MENU
-# =========================================================
+# ---------- THANH ĐIỀU HƯỚNG ----------
+st.sidebar.markdown("# 🛡️ Social Sandbox AI")
+st.sidebar.caption("Không gian thực hành xác thực thông tin số")
 
-with st.sidebar:
-    st.markdown("## 🛡️ Social Sandbox AI")
-    st.caption("Công cụ xác thực thông tin số")
+page = st.sidebar.radio(
+    "CHỨC NĂNG",
+    [
+        "🔎 Kiểm tra thông tin",
+        "🧩 Thử tình huống",
+        "📝 Khảo sát nhanh",
+        "📊 Lịch sử & thống kê",
+        "ℹ️ Về đề tài",
+    ],
+)
 
-    page = st.radio(
-        "MENU",
-        [
-            "🔎 Kiểm tra thông tin",
-            "🧩 Thử tình huống",
-            "📝 Khảo sát nhanh",
-            "📊 Lịch sử & thống kê",
-            "ℹ️ Về đề tài",
-        ],
-        label_visibility="collapsed",
-    )
-
-    st.divider()
-    st.markdown("### 🔐 Lưu ý an toàn")
-    st.caption(
-        "Không nhập OTP, mật khẩu, số thẻ, địa chỉ nhà "
-        "hoặc thông tin cá nhân thật."
-    )
-    st.caption(
-        "Kết quả chỉ mang tính tham khảo, không phải kết luận chắc chắn."
-    )
+st.sidebar.divider()
+st.sidebar.caption("Dự án nghiên cứu KHKT dành cho học sinh trung học")
 
 
-# =========================================================
-# HEADER
-# =========================================================
-
-st.markdown(f"""
-<div class="hero">
-    <div class="hero-label">DIGITAL SAFETY · SOCIAL SANDBOX AI</div>
-    <h1>Kiểm tra trước khi bạn bấm.</h1>
-    <p>{html.escape(PROJECT_TITLE)}</p>
-    <p>
-        Nhận diện dấu hiệu đáng ngờ, luyện tư duy phản biện
-        và xác minh thông tin trước khi chia sẻ.
-    </p>
-</div>
-""", unsafe_allow_html=True)
-
-
-# =========================================================
-# TRANG 1: KIỂM TRA THÔNG TIN
-# =========================================================
-
+# ---------- TRANG 1: PHÂN TÍCH ----------
 if page == "🔎 Kiểm tra thông tin":
+    st.title("🔎 Kiểm tra thông tin số")
+    st.write(
+        "Dán tin nhắn, bài đăng hoặc nội dung đáng ngờ. "
+        "Hệ thống sẽ kết hợp quy tắc nhận diện với AI để hỗ trợ em kiểm chứng."
+    )
 
-    st.subheader("🔎 Kiểm tra nội dung đáng ngờ")
-
-    examples = {
+    samples = {
+        "Tin nhắn giả mạo ngân hàng":
+            "Tài khoản của bạn sẽ bị khóa sau 10 phút. "
+            "Bấm http://example.invalid/verify và nhập mật khẩu, mã OTP ngay.",
+        "Tuyển cộng tác viên":
+            "Tuyển cộng tác viên online, lương cao mỗi ngày. "
+            "Nộp phí kích hoạt trước để bắt đầu công việc.",
+        "Tin tức chưa xác minh":
+            "Một bài đăng nói trường học sẽ đóng cửa ngày mai, "
+            "nhưng không đưa nguồn chính thức và yêu cầu chia sẻ gấp.",
         "Tự nhập nội dung": "",
-        "Giả danh ngân hàng": (
-            "Tài khoản của bạn sẽ bị khóa. Hãy xác minh tài khoản "
-            "và nhập mã OTP ngay lập tức tại đường link lạ."
-        ),
-        "Tuyển cộng tác viên": (
-            "Tuyển cộng tác viên làm nhiệm vụ nhận hoa hồng. "
-            "Việc nhẹ lương cao, nạp tiền trước để mở nhiệm vụ."
-        ),
-        "Trúng thưởng": (
-            "Chúc mừng bạn đã trúng thưởng điện thoại! "
-            "Bấm link nhận quà và đóng phí nhận thưởng hôm nay."
-        ),
-        "Mượn tiền khẩn cấp": (
-            "Mình đang cấp cứu, mượn tiền gấp giúp mình. "
-            "Đừng gọi lại, chuyển khoản ngay nhé."
-        ),
-        "Mua bán online": (
-            "Giá rẻ bất thường, chuyển khoản để giữ hàng. "
-            "Thanh toán ngoài nền tảng để được giảm giá."
-        ),
-        "Đầu tư lợi nhuận cao": (
-            "Cam kết lợi nhuận 100%, không rủi ro. "
-            "Nạp tiền ngay để nhân đôi tài khoản."
-        ),
-        "Vay tiền": (
-            "Duyệt vay ngay, phí giải ngân và phí mở hồ sơ "
-            "cần được thanh toán trước."
-        ),
     }
 
-    choice = st.selectbox("Thử nội dung mẫu", list(examples.keys()))
+    sample_choice = st.selectbox("Thử nhanh bằng nội dung mẫu", list(samples.keys()))
 
-    if choice != "Tự nhập nội dung":
-        st.session_state.draft = examples[choice]
+    if st.button("📥 Dùng nội dung mẫu"):
+        st.session_state.content_input = samples[sample_choice]
 
     content = st.text_area(
         "Nội dung cần kiểm tra",
-        key="draft",
-        height=180,
-        placeholder="Dán tin nhắn, bài đăng hoặc đường link vào đây..."
+        key="content_input",
+        height=220,
+        max_chars=7000,
+        placeholder="Dán nội dung tại đây. Không nhập mật khẩu, OTP hoặc dữ liệu cá nhân thật.",
     )
 
-    c1, c2 = st.columns(2)
+    col1, col2 = st.columns([2, 1])
 
-    with c1:
-        analyze = st.button(
-            "✨ Phân tích ngay",
+    with col1:
+        analyze_clicked = st.button(
+            "✨ Phân tích bằng AI",
             type="primary",
-            use_container_width=True
+            use_container_width=True,
         )
 
-    with c2:
-        clear = st.button("🗑️ Xóa nội dung", use_container_width=True)
+    with col2:
+        rule_clicked = st.button(
+            "⚡ Kiểm tra quy tắc",
+            use_container_width=True,
+        )
 
-    if clear:
-        st.session_state.draft = ""
-        st.session_state.last_result = None
-        st.rerun()
-
-    if analyze:
-        if not content.strip():
-            st.warning("Em hãy nhập hoặc chọn nội dung mẫu trước nhé.")
+    if analyze_clicked or rule_clicked:
+        if len(content.strip()) < 10:
+            st.warning("Em hãy nhập nội dung dài hơn một chút để phân tích.")
         else:
-            result = analyze_content(content)
-            st.session_state.last_result = result
-            save_history(result)
+            result = rule_analysis(content)
 
-    result = st.session_state.last_result
+            st.subheader("Kết quả kiểm tra sơ bộ")
+            st.metric("Điểm rủi ro theo quy tắc", f"{result['score']}/95")
+            st.write(f"**Đánh giá:** {result['level']}")
 
-    if result:
-        st.divider()
-        st.subheader("📋 Kết quả kiểm tra")
+            if result["matched"]:
+                st.write("**Các nhóm dấu hiệu được nhận diện:**")
+                for category, words in result["matched"]:
+                    st.write(f"- **{category}:** {', '.join(words)}")
+            else:
+                st.info(
+                    "Quy tắc hiện tại chưa phát hiện từ khóa đáng chú ý. "
+                    "Điều này không đồng nghĩa nội dung chắc chắn an toàn."
+                )
 
-        st.markdown(
-            f"""
-            <div class="{result['css']}">
-                <div class="pill">{html.escape(result['level'])}</div>
-                <h3>{html.escape(result['headline'])}</h3>
-                <p>{html.escape(result['advice'])}</p>
+            if result["url_notes"]:
+                st.write("**Lưu ý về đường link:**")
+                for note in result["url_notes"]:
+                    st.write(f"- {note}")
+
+            if analyze_clicked:
+                with st.spinner("Gemini đang phân tích nội dung..."):
+                    ai_text, error = ask_gemini(content)
+
+                if ai_text:
+                    st.subheader("🧠 Phân tích từ Gemini AI")
+                    st.markdown(ai_text)
+                else:
+                    st.warning(error)
+                    st.info(
+                        "Em vẫn có thể dùng phần kiểm tra quy tắc ở trên. "
+                        "Kết quả quy tắc không thay thế việc xác minh nguồn."
+                    )
+
+            st.markdown("""
+            <div class="panel">
+            <b>🔐 Nhớ an toàn:</b><br>
+            Không gửi OTP, mật khẩu hay giấy tờ cá nhân cho người lạ.
+            Hãy kiểm tra thông tin qua nguồn chính thức và độc lập.
             </div>
-            """,
-            unsafe_allow_html=True
-        )
+            """, unsafe_allow_html=True)
 
-        a, b, c = st.columns(3)
-        a.metric("Mức cảnh báo", result["level"])
-        b.metric("Điểm quy tắc", f"{result['score']}/100")
-        c.metric("Nhóm dấu hiệu", len(result["findings"]))
-
-        st.caption(
-            "Điểm quy tắc nội bộ, không phải xác suất nội dung là lừa đảo."
-        )
-
-        st.markdown("### ⚠️ Dấu hiệu phát hiện")
-
-        if result["findings"]:
-            for finding in result["findings"]:
-                with st.expander(f"🔎 {finding['name']}"):
-                    st.write(finding["reason"])
-                    st.write("Cụm từ khớp: " + ", ".join(finding["hits"]))
-        else:
-            st.info(
-                "Chưa tìm thấy cụm từ phổ biến đáng chú ý. "
-                "Lừa đảo vẫn có thể dùng cách diễn đạt khác."
-            )
-
-        if result["urls"]:
-            st.markdown("### 🌐 Kiểm tra đường link")
-
-            for item in result["urls"]:
-                st.write("**" + item["url"] + "**")
-                st.caption("Tên miền: " + item["host"])
-                for flag in item["flags"]:
-                    st.write("• " + flag)
-
-            st.warning(
-                "Không mở link đáng ngờ để thử. Hãy tự tìm website "
-                "hoặc ứng dụng chính thức để xác minh."
-            )
-
-        st.markdown("### ✅ Các bước xử lý an toàn")
-
-        st.markdown("""
-        1. **Dừng lại:** Không chuyển tiền, nhập OTP hoặc mật khẩu.
-        2. **Xác minh:** Tự tìm kênh liên hệ chính thức.
-        3. **Đối chiếu:** Kiểm tra thông tin từ nguồn độc lập.
-        4. **Hỏi người đáng tin:** Nhờ phụ huynh hoặc giáo viên nếu còn phân vân.
-        """)
-
-    else:
-        st.markdown("""
-        <div class="panel">
-            <h3>🛡️ Bốn bước bảo vệ bản thân</h3>
-            <span class="pill">Dừng lại</span>
-            <span class="pill">Kiểm tra nguồn</span>
-            <span class="pill">Đối chiếu thông tin</span>
-            <span class="pill">Quyết định an toàn</span>
-            <p class="muted">
-                Công cụ hỗ trợ nhận diện dấu hiệu, không thay thế
-                việc xác minh từ nguồn chính thức.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with st.expander("Giới hạn của bộ phân tích"):
-        st.write(
-            "Phiên bản hiện tại sử dụng quy tắc từ khóa và một số kiểm tra "
-            "URL cơ bản. Chưa tích hợp mô hình AI lớn hoặc cơ sở dữ liệu "
-            "xác minh thời gian thực. Có thể xảy ra cảnh báo nhầm hoặc bỏ sót."
-        )
+            st.session_state.history.insert(0, {
+                "Thời gian": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                "Nội dung": content[:160],
+                "Điểm quy tắc": result["score"],
+                "Đánh giá": result["level"],
+                "Đã gọi AI": bool(analyze_clicked),
+            })
 
 
-# =========================================================
-# TRANG 2: THỬ TÌNH HUỐNG
-# =========================================================
-
+# ---------- TRANG 2: TÌNH HUỐNG ----------
 elif page == "🧩 Thử tình huống":
-
-    st.subheader("🧩 Phòng thực hành an toàn số")
-
+    st.title("🧩 Phòng thực hành tình huống")
     st.write(
-        "Đọc kỹ tình huống mô phỏng, lựa chọn cách xử lý an toàn nhất "
-        "và xem lời giải thích. Mỗi lần đổi, hệ thống sẽ chọn một tình "
-        "huống khác; các tình huống chưa luyện sẽ được ưu tiên."
+        "Luyện tập cách xử lý tin nhắn, đường link và thông tin đáng nghi. "
+        "Mỗi lượt em có thể gặp một tình huống khác."
     )
 
-    total_cases = len(CASES)
+    if st.session_state.current_scenario is None:
+        st.session_state.current_scenario = random.randrange(len(SCENARIOS))
 
-    if st.session_state.scenario_current is None:
-        st.session_state.scenario_current = random.randrange(total_cases)
-        st.session_state.scenario_seen = [st.session_state.scenario_current]
+    current = st.session_state.current_scenario
+    scenario = SCENARIOS[current]
 
-    current = st.session_state.scenario_current
-    case = CASES[current]
-
-    answered = len(st.session_state.scenario_answered)
-    correct_count = sum(st.session_state.scenario_answered.values())
-
-    a, b, c = st.columns(3)
-    a.metric("Tình huống", f"{current + 1}/{total_cases}")
-    b.metric("Đã trả lời", answered)
-    c.metric("Trả lời đúng", correct_count)
-
-    st.progress(answered / total_cases)
-
+    st.markdown(f"### {scenario['title']}")
     st.markdown(
-        f"""
-        <div class="panel">
-            <div class="pill">{html.escape(case['category'])}</div>
-            <h3>{html.escape(case['title'])}</h3>
-            <p style="line-height:1.95">
-                {html.escape(case['text'])}
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True
+        f'<div class="panel">{scenario["text"]}</div>',
+        unsafe_allow_html=True,
     )
 
     answer = st.radio(
-        "Theo em, đâu là cách xử lý an toàn nhất?",
-        case["options"],
-        key=f"scenario_choice_{current}"
+        "Em sẽ làm gì?",
+        scenario["choices"],
+        key=f"answer_{current}",
     )
 
-    if st.button(
-        "Kiểm tra câu trả lời",
-        type="primary",
-        use_container_width=True,
-        key=f"scenario_check_{current}"
-    ):
-        selected_index = case["options"].index(answer)
-        is_correct = selected_index == case["answer"]
-
-        st.session_state.scenario_answered[current] = is_correct
-        st.session_state.scenario_feedback[current] = {
-            "choice": selected_index,
-            "correct": is_correct,
+    if st.button("Kiểm tra câu trả lời"):
+        correct = scenario["choices"].index(answer) == scenario["correct"]
+        st.session_state.scenario_result = {
+            "index": current,
+            "correct": correct,
+            "explain": scenario["explain"],
         }
 
-    feedback = st.session_state.scenario_feedback.get(current)
-
-    if feedback:
-        if feedback["correct"]:
-            st.success("🎉 Chính xác! Em đã chọn cách xử lý an toàn.")
+        if correct:
+            st.success("Chính xác! Em đã chọn cách xử lý an toàn hơn.")
         else:
-            st.error(
-                "Chưa chính xác. Không sao, đây là cơ hội để em học "
-                "cách nhận diện dấu hiệu đáng ngờ."
-            )
+            st.warning("Chưa chính xác. Mình cùng xem lại tình huống nhé.")
 
-        st.markdown("### 💡 Giải thích chi tiết")
-        st.write(case["why"])
-        st.info("**Bài học cần nhớ:** " + case["lesson"])
+        st.info(scenario["explain"])
 
-        st.markdown("### 🔎 Câu hỏi suy ngẫm")
-
-        reflection = [
-            "Dấu hiệu nào trong tình huống khiến em cần dừng lại?",
-            "Em có thể kiểm tra thông tin bằng nguồn độc lập nào?",
-            "Nếu người gửi tiếp tục gây áp lực, em sẽ xử lý ra sao?"
+    if st.button("🎲 Đổi tình huống khác"):
+        unseen = [
+            i for i in range(len(SCENARIOS))
+            if i not in st.session_state.seen_scenarios
+            and i != current
         ]
 
-        for question in reflection:
-            st.write("• " + question)
+        if not unseen:
+            unseen = [i for i in range(len(SCENARIOS)) if i != current]
 
-    st.divider()
-
-    left, right = st.columns(2)
-
-    with left:
-        if st.button(
-            "🎲 Đổi tình huống khác",
-            use_container_width=True
-        ):
-            available = [
-                i for i in range(total_cases)
-                if i != current
-            ]
-
-            unseen = [
-                i for i in available
-                if i not in st.session_state.scenario_seen
-            ]
-
-            if not unseen:
-                unseen = available
-                st.session_state.scenario_seen = [current]
-
-            next_index = random.choice(unseen)
-            st.session_state.scenario_current = next_index
-            st.session_state.scenario_seen.append(next_index)
-            st.rerun()
-
-    with right:
-        if st.button(
-            "🔄 Bắt đầu lại",
-            use_container_width=True
-        ):
-            st.session_state.scenario_answered = {}
-            st.session_state.scenario_feedback = {}
-            next_index = random.randrange(total_cases)
-            st.session_state.scenario_current = next_index
-            st.session_state.scenario_seen = [next_index]
-            st.rerun()
-
-    if answered:
-        st.markdown("### 📊 Kết quả luyện tập")
-
-        a, b, c = st.columns(3)
-        a.metric("Đã trả lời", answered)
-        b.metric("Đúng", correct_count)
-        c.metric("Tỉ lệ đúng", f"{round(correct_count / answered * 100)}%")
-
-        st.caption(
-            "Kết quả chỉ lưu trong phiên hiện tại. Các tình huống là "
-            "mô phỏng để luyện kỹ năng, không đại diện cho mọi trường hợp thực tế."
-        )
+        st.session_state.seen_scenarios.append(current)
+        st.session_state.current_scenario = random.choice(unseen)
+        st.rerun()
 
 
-# =========================================================
-# TRANG 3: KHẢO SÁT NHANH
-# =========================================================
-
+# ---------- TRANG 3: KHẢO SÁT ----------
 elif page == "📝 Khảo sát nhanh":
-
-    st.subheader("📝 Khảo sát kỹ năng xác thực thông tin")
-
+    st.title("📝 Khảo sát kỹ năng xác thực")
     st.write(
-        "Bài khảo sát ngắn phục vụ trải nghiệm nghiên cứu. "
-        "Không cần nhập tên hoặc thông tin cá nhân."
+        "Khảo sát tự đánh giá phục vụ học tập và nghiên cứu. "
+        "Đây không phải bài kiểm tra năng lực đã được chuẩn hóa."
     )
-
-    mode = st.radio(
-        "Thời điểm khảo sát",
-        ["Trước trải nghiệm", "Sau trải nghiệm"],
-        horizontal=True
-    )
-
-    questions = [
-        {
-            "q": "Tin nhắn yêu cầu OTP qua link lạ. Em nên:",
-            "opts": [
-                "Nhập ngay",
-                "Không cung cấp OTP và xác minh qua kênh chính thức",
-                "Gửi OTP cho bạn"
-            ],
-            "ans": 1
-        },
-        {
-            "q": "Một công việc online yêu cầu nạp tiền trước. Em nên:",
-            "opts": [
-                "Nạp thử một khoản nhỏ",
-                "Xác minh đơn vị và không chuyển tiền khi chưa rõ",
-                "Làm theo ngay"
-            ],
-            "ans": 1
-        },
-        {
-            "q": "Người quen mượn tiền gấp và bảo đừng gọi. Em nên:",
-            "opts": [
-                "Chuyển tiền ngay",
-                "Đăng công khai tin nhắn",
-                "Xác minh qua kênh khác"
-            ],
-            "ans": 2
-        },
-        {
-            "q": "Website có tên gần giống thương hiệu quen thuộc. Em nên:",
-            "opts": [
-                "Tin ngay",
-                "Kiểm tra tên miền và tìm kênh chính thức",
-                "Nhập thử mật khẩu"
-            ],
-            "ans": 1
-        },
-        {
-            "q": "Cảnh báo thấp có nghĩa là:",
-            "opts": [
-                "Chắc chắn an toàn",
-                "Không cần kiểm tra thêm",
-                "Chưa thấy nhiều dấu hiệu theo quy tắc, vẫn cần xác minh"
-            ],
-            "ans": 2
-        }
-    ]
 
     with st.form("survey_form"):
-        answers = []
-
-        for i, q in enumerate(questions):
-            st.markdown(f"**Câu {i + 1}. {q['q']}**")
-            answers.append(
-                st.radio(
-                    "Chọn đáp án",
-                    q["opts"],
-                    key=f"survey_{mode}_{i}",
-                    label_visibility="collapsed"
-                )
-            )
-
-        submitted = st.form_submit_button(
-            "Chấm điểm khảo sát",
-            type="primary",
-            use_container_width=True
+        q1 = st.select_slider(
+            "1. Em thường kiểm tra nguồn trước khi chia sẻ thông tin?",
+            options=[1, 2, 3, 4, 5],
+            value=3,
         )
+        q2 = st.select_slider(
+            "2. Em nhận ra yêu cầu OTP hoặc chuyển tiền đáng nghi?",
+            options=[1, 2, 3, 4, 5],
+            value=3,
+        )
+        q3 = st.select_slider(
+            "3. Em biết đối chiếu thông tin từ nhiều nguồn?",
+            options=[1, 2, 3, 4, 5],
+            value=3,
+        )
+        q4 = st.select_slider(
+            "4. Em biết cách kiểm tra đường link trước khi mở?",
+            options=[1, 2, 3, 4, 5],
+            value=3,
+        )
+        q5 = st.select_slider(
+            "5. Em sẵn sàng dừng lại khi nội dung tạo áp lực?",
+            options=[1, 2, 3, 4, 5],
+            value=3,
+        )
+
+        submitted = st.form_submit_button("Lưu kết quả khảo sát")
 
     if submitted:
-        correct = sum(
-            1 for i, q in enumerate(questions)
-            if answers[i] == q["opts"][q["ans"]]
-        )
-
-        score = round(correct / len(questions) * 100)
-
-        if mode == "Trước trải nghiệm":
-            st.session_state.quiz_before = score
-        else:
-            st.session_state.quiz_after = score
-
-        st.session_state.survey_history.append({
-            "Thời gian": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "Thời điểm": mode,
-            "Số câu đúng": correct,
-            "Tổng câu": len(questions),
-            "Điểm": score
+        score = round((q1 + q2 + q3 + q4 + q5) / 25 * 100)
+        st.session_state.survey_results.append({
+            "Thời gian": datetime.now().strftime("%d/%m/%Y %H:%M"),
+            "Điểm tự đánh giá": score,
         })
-
-        st.success(
-            f"Em trả lời đúng {correct}/{len(questions)} câu — {score}/100."
+        st.success(f"Đã lưu kết quả phiên hiện tại: {score}/100")
+        st.caption(
+            "Điểm cao thể hiện mức tự đánh giá cao hơn, "
+            "không tự động chứng minh kỹ năng thực tế."
         )
 
-    a, b = st.columns(2)
 
-    a.metric(
-        "Điểm trước trải nghiệm",
-        "—" if st.session_state.quiz_before is None
-        else f"{st.session_state.quiz_before}/100"
-    )
-
-    b.metric(
-        "Điểm sau trải nghiệm",
-        "—" if st.session_state.quiz_after is None
-        else f"{st.session_state.quiz_after}/100"
-    )
-
-    if (
-        st.session_state.quiz_before is not None
-        and st.session_state.quiz_after is not None
-    ):
-        diff = st.session_state.quiz_after - st.session_state.quiz_before
-        st.info(
-            f"Chênh lệch điểm: {diff:+d} điểm phần trăm. "
-            "Kết quả này không tự nó chứng minh quan hệ nhân quả."
-        )
-
-    st.caption("Dữ liệu chỉ lưu trong phiên ứng dụng hiện tại.")
-
-
-# =========================================================
-# TRANG 4: LỊCH SỬ VÀ THỐNG KÊ
-# =========================================================
-
+# ---------- TRANG 4: THỐNG KÊ ----------
 elif page == "📊 Lịch sử & thống kê":
+    st.title("📊 Lịch sử & thống kê")
+    st.write("Dữ liệu dưới đây chỉ lưu trong phiên hoạt động hiện tại của ứng dụng.")
 
-    st.subheader("📊 Lịch sử và thống kê")
+    history = st.session_state.history
+    surveys = st.session_state.survey_results
 
-    if st.session_state.history:
-        df = pd.DataFrame(st.session_state.history)
-
-        st.metric("Số lượt kiểm tra", len(df))
-        st.dataframe(df, use_container_width=True, hide_index=True)
-
-        st.download_button(
-            "⬇️ Tải lịch sử kiểm tra CSV",
-            data=df.to_csv(index=False).encode("utf-8-sig"),
-            file_name="social_sandbox_history.csv",
-            mime="text/csv"
-        )
-    else:
-        st.info("Chưa có lịch sử. Hãy kiểm tra một nội dung trước.")
-
-    st.divider()
-    st.markdown("### 📝 Kết quả khảo sát")
-
-    if st.session_state.survey_history:
-        survey_df = pd.DataFrame(st.session_state.survey_history)
-
-        st.dataframe(
-            survey_df,
-            use_container_width=True,
-            hide_index=True
-        )
-
-        st.download_button(
-            "⬇️ Tải kết quả khảo sát CSV",
-            data=survey_df.to_csv(index=False).encode("utf-8-sig"),
-            file_name="social_sandbox_survey.csv",
-            mime="text/csv"
-        )
-    else:
-        st.info("Chưa có kết quả khảo sát.")
-
-    st.caption(
-        "Lịch sử và khảo sát hiện được lưu trong phiên, "
-        "chưa phải cơ sở dữ liệu lâu dài."
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Lượt phân tích", len(history))
+    c2.metric("Lượt khảo sát", len(surveys))
+    c3.metric(
+        "Lượt đã gọi AI",
+        sum(1 for item in history if item["Đã gọi AI"]),
     )
 
+    if history:
+        st.subheader("Lịch sử phân tích")
+        st.dataframe(history, use_container_width=True)
 
-# =========================================================
-# TRANG 5: GIỚI THIỆU ĐỀ TÀI
-# =========================================================
+        import pandas as pd
+        csv_data = pd.DataFrame(history).to_csv(index=False).encode("utf-8-sig")
 
+        st.download_button(
+            "⬇️ Tải lịch sử dạng CSV",
+            data=csv_data,
+            file_name="lich_su_social_sandbox.csv",
+            mime="text/csv",
+        )
+    else:
+        st.info("Chưa có lượt phân tích nào trong phiên hiện tại.")
+
+    if surveys:
+        st.subheader("Kết quả khảo sát")
+        st.dataframe(surveys, use_container_width=True)
+    else:
+        st.info("Chưa có kết quả khảo sát trong phiên hiện tại.")
+
+
+# ---------- TRANG 5: GIỚI THIỆU ----------
 elif page == "ℹ️ Về đề tài":
-
-    st.subheader("ℹ️ Giới thiệu đề tài")
-
-    st.markdown(
-        f"""
-        <div class="panel">
-            <div class="pill">ĐỀ TÀI NGHIÊN CỨU</div>
-            <h3>{html.escape(PROJECT_TITLE)}</h3>
-            <p>
-                Xây dựng môi trường hỗ trợ học sinh luyện tập nhận diện
-                dấu hiệu đáng ngờ, xác minh nguồn thông tin và suy nghĩ
-                trước khi chia sẻ nội dung số.
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    a, b = st.columns(2)
-
-    with a:
-        st.markdown("""
-        <div class="panel">
-            <h3>🔎 Kiểm tra thông tin</h3>
-            <p>Phân tích dấu hiệu ngôn ngữ và URL đáng ngờ.</p>
-        </div>
-        <div class="panel">
-            <h3>🧩 Thực hành</h3>
-            <p>Luyện tập qua các tình huống mô phỏng gần gũi.</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with b:
-        st.markdown("""
-        <div class="panel">
-            <h3>📝 Khảo sát</h3>
-            <p>Quan sát kết quả trước và sau trải nghiệm.</p>
-        </div>
-        <div class="panel">
-            <h3>📊 Thống kê</h3>
-            <p>Xem lịch sử trong phiên và xuất dữ liệu CSV.</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("### ⚠️ Giới hạn hệ thống")
-
-    st.warning(
-        "Phiên bản hiện tại dùng quy tắc từ khóa và kiểm tra URL cơ bản. "
-        "Chưa tích hợp mô hình AI lớn hoặc cơ sở dữ liệu xác minh thời gian "
-        "thực. Kết quả có thể cảnh báo nhầm hoặc bỏ sót."
-    )
-
-    st.markdown("### 🔐 Nguyên tắc an toàn")
+    st.title("ℹ️ Về đề tài nghiên cứu")
 
     st.markdown("""
-    - Không nhập mật khẩu, OTP, số thẻ hoặc dữ liệu cá nhân thật.
-    - Không xem điểm cảnh báo là xác suất lừa đảo.
-    - Luôn xác minh qua kênh chính thức.
-    - Khi nghiên cứu với học sinh, cần có sự cho phép phù hợp
-      và bảo vệ dữ liệu người tham gia.
+    <div class="panel">
+    <h3>🛡️ Social Sandbox AI</h3>
+    <p><b>Tên đề tài:</b> Nghiên cứu hành vi xác thực thông tin số của học sinh
+    trung học và xây dựng hệ thống can thiệp thích ứng ứng dụng trí tuệ nhân tạo.</p>
+    <p><b>Mục tiêu:</b> Hỗ trợ học sinh nhận biết dấu hiệu đáng nghi, thực hành
+    kiểm chứng thông tin và rèn luyện tư duy phản biện.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.subheader("Các chức năng")
+    st.markdown("""
+    - **Phân tích quy tắc:** nhận diện một số từ khóa và dấu hiệu đơn giản.
+    - **Gemini AI:** giải thích nội dung, nêu rủi ro sơ bộ và đề xuất cách kiểm chứng.
+    - **Phòng tình huống:** luyện tập lựa chọn cách xử lý an toàn.
+    - **Khảo sát và thống kê:** lưu dữ liệu tạm thời trong phiên sử dụng.
     """)
 
-
-# =========================================================
-# CHÂN TRANG
-# =========================================================
+    st.subheader("Giới hạn cần biết")
+    st.warning("""
+    AI có thể nhầm lẫn hoặc đưa ra nhận định chưa chính xác. Ứng dụng không
+    tự động xác nhận một tin là thật hay giả, không tra cứu danh tiếng đường
+    link trực tiếp và không thay thế việc kiểm chứng từ nguồn đáng tin cậy.
+    Dữ liệu thống kê hiện chưa được lưu vào cơ sở dữ liệu lâu dài.
+    """)
 
 st.divider()
-
-st.markdown(
-    f"""
-    <p style="text-align:center; color:#9aa9c5; font-size:12px;">
-        SOCIAL SANDBOX AI · XÁC THỰC THÔNG TIN SỐ<br>
-        {html.escape(PROJECT_TITLE)}<br>
-        Dừng lại · Kiểm tra · Suy nghĩ trước khi chia sẻ
-    </p>
-    """,
-    unsafe_allow_html=True
+st.caption(
+    "Social Sandbox AI • Công cụ giáo dục và nghiên cứu • "
+    "Luôn kiểm chứng thông tin trước khi chia sẻ."
 )
+def get_api_key():
+    try:
+        return st.secrets.get("GEMINI_API_KEY", "")
+    except Exception:
+        return ""
