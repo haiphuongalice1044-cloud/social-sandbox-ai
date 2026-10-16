@@ -338,10 +338,9 @@ Không yêu cầu người dùng cung cấp mật khẩu, mã OTP hay thông tin
 """
 
         response = client.models.generate_content(
-            model="gemini-flash-latest",
-            contents=prompt,
-        )
-
+    model="gemini-2.5-flash",
+    contents=prompt,
+)
         if not response.text:
             return None, "AI không trả về nội dung. Em thử lại sau nhé."
 
