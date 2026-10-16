@@ -93,7 +93,7 @@ def analyze_with_gemini(text):
     if not api_key:
         return None, "Chưa cấu hình GEMINI_API_KEY trong Streamlit Cloud → Settings → Secrets."
 
-    model = get_secret("GEMINI_MODEL", "gemini-2.5-flash")
+    model = get_secret("GEMINI_MODEL", "gemini-3.5-flash")
     model = model.strip()
     if model.startswith("models/"):
         model = model[len("models/"):]
