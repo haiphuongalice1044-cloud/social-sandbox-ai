@@ -16,7 +16,8 @@ st.set_page_config(
 
 NAVY = "#00246B"
 ICE = "#CADCFC"
-WHITE = "#FFFFFF"
+WHITE = "#000000"
+BLACK = "#000000"
 
 # =====================================================
 # 2. CSS - NAVY COSMIC INTERFACE
@@ -335,6 +336,93 @@ footer {
 #MainMenu {
     visibility: hidden;
 }
+
+/* =====================================================
+   BLACK TEXT MODE - TOAN BO CHU MAU DEN
+   Nen duoc lam sang de chu den de doc ro rang.
+   ===================================================== */
+.stApp {
+    background:
+        radial-gradient(ellipse at 15% 20%, rgba(0,36,107,.10), transparent 35%),
+        radial-gradient(ellipse at 85% 75%, rgba(80,130,220,.14), transparent 40%),
+        linear-gradient(135deg, #CADCFC, #FFFFFF, #CADCFC) !important;
+    color: #000000 !important;
+}
+
+/* Tất cả chữ trong ứng dụng */
+.stApp,
+.stApp *,
+.stApp *::before,
+.stApp *::after,
+header[data-testid="stHeader"],
+header[data-testid="stHeader"] *,
+section[data-testid="stSidebar"],
+section[data-testid="stSidebar"] *,
+div[data-baseweb="popover"],
+div[data-baseweb="popover"] *,
+div[data-baseweb="menu"],
+div[data-baseweb="menu"] *,
+div[role="listbox"],
+div[role="listbox"] *,
+div[role="option"],
+div[role="option"] * {
+    color: #000000 !important;
+}
+
+/* Nền sáng cho các khu vực nội dung */
+header[data-testid="stHeader"] {
+    background: rgba(202,220,252,.96) !important;
+}
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #FFFFFF, #CADCFC) !important;
+}
+.hero {
+    background: linear-gradient(120deg, rgba(255,255,255,.96), rgba(202,220,252,.92)) !important;
+    border-color: rgba(0,36,107,.25) !important;
+}
+.glass-card {
+    background: rgba(255,255,255,.92) !important;
+    border-color: rgba(0,36,107,.22) !important;
+}
+[data-testid="stMetric"] {
+    background: rgba(255,255,255,.92) !important;
+    border-color: rgba(0,36,107,.22) !important;
+}
+.stTextArea textarea,
+.stTextInput input,
+.stSelectbox div[data-baseweb="select"] > div,
+div[data-baseweb="popover"],
+div[data-baseweb="menu"],
+div[role="listbox"],
+div[role="option"] {
+    background: #FFFFFF !important;
+}
+.stTextArea textarea,
+.stTextInput input {
+    caret-color: #000000 !important;
+}
+.stTextArea textarea::placeholder,
+.stTextInput input::placeholder {
+    color: #000000 !important;
+    opacity: .65 !important;
+}
+.stButton > button,
+.stDownloadButton > button {
+    background: #CADCFC !important;
+    color: #000000 !important;
+    border-color: #00246B !important;
+}
+.stButton > button *,
+.stDownloadButton > button * {
+    color: #000000 !important;
+}
+div[role="option"]:hover {
+    background: #CADCFC !important;
+}
+a {
+    color: #000000 !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -955,4 +1043,3 @@ st.markdown("""
     EDUCATIONAL RESEARCH PROJECT • VERSION 2.2
 </div>
 """, unsafe_allow_html=True)
-
