@@ -16,7 +16,7 @@ st.set_page_config(
 
 NAVY = "#00246B"
 ICE = "#CADCFC"
-WHITE = "#000000"
+WHITE = "#FFFFFF"
 BLACK = "#000000"
 
 # =====================================================
@@ -30,399 +30,192 @@ st.markdown("""
 :root {
     --navy: #00246B;
     --ice: #CADCFC;
-    --white: #FFFFFF;
+    --ink: #000000;
+    --panel: #EAF1FF;
+    --panel-strong: #FFFFFF;
 }
 
-/* GLOBAL */
 html, body, [class*="css"] {
     font-family: 'Be Vietnam Pro', sans-serif !important;
 }
 
+/* NỀN TOÀN ỨNG DỤNG TỐI */
 .stApp {
     background:
-        radial-gradient(ellipse at 15% 20%, rgba(202,220,252,.18), transparent 35%),
-        radial-gradient(ellipse at 85% 75%, rgba(80,130,220,.20), transparent 40%),
-        linear-gradient(135deg, #00246B, #00143D, #00246B);
+        radial-gradient(ellipse at 12% 18%, rgba(202,220,252,.16), transparent 34%),
+        radial-gradient(ellipse at 88% 78%, rgba(80,130,220,.20), transparent 40%),
+        linear-gradient(135deg, #00143D, #00246B, #000B27) !important;
     background-size: 200% 200%;
     animation: backgroundMove 18s ease infinite;
-    color: #FFFFFF !important;
+    color: #000000 !important;
 }
-
 @keyframes backgroundMove {
     0% { background-position: 0% 0%; }
     50% { background-position: 100% 100%; }
     100% { background-position: 0% 0%; }
 }
 
-/* TOP HEADER */
+/* VÙNG NỘI DUNG SÁNG ĐỂ CHỮ ĐEN DỄ ĐỌC */
+section[data-testid="stMain"] > div,
+.main .block-container {
+    color: #000000 !important;
+}
+.main .block-container {
+    background: rgba(234,241,255,.97) !important;
+    border: 1px solid rgba(202,220,252,.8);
+    border-radius: 22px;
+    padding: 2rem 2.2rem !important;
+    margin-top: 1.2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 14px 45px rgba(0,0,0,.22);
+}
+
+/* ÉP TOÀN BỘ VĂN BẢN THÀNH MÀU ĐEN */
+.stApp p, .stApp span, .stApp label, .stApp li,
+.stApp h1, .stApp h2, .stApp h3, .stApp h4,
+.stApp h5, .stApp h6, .stApp strong, .stApp b,
+.stApp [data-testid="stMarkdownContainer"],
+.stApp [data-testid="stCaptionContainer"],
+.stApp [data-testid="stMetricLabel"],
+.stApp [data-testid="stMetricValue"],
+.stApp [data-testid="stMetricDelta"],
+.stApp .stRadio, .stApp .stCheckbox,
+.stApp [data-testid="stWidgetLabel"] {
+    color: #000000 !important;
+}
+
+h1, h2, h3, h4, h5, h6 { color: #000000 !important; font-weight: 800 !important; }
+.subtitle, .stCaption, [data-testid="stCaptionContainer"] { color: #000000 !important; }
+
+/* HEADER VÀ SIDEBAR SÁNG */
 header[data-testid="stHeader"] {
-    background: #00246B !important;
-    border-bottom: 1px solid rgba(202,220,252,.35);
-}
-
-header[data-testid="stHeader"] * {
-    color: #FFFFFF !important;
-}
-
-[data-testid="stToolbar"] {
-    background: transparent !important;
-}
-
-[data-testid="stDecoration"] {
     background: #CADCFC !important;
+    border-bottom: 1px solid #91B8F5;
 }
+header[data-testid="stHeader"] * { color: #000000 !important; }
+[data-testid="stToolbar"] { background: transparent !important; }
+[data-testid="stDecoration"] { background: #00246B !important; }
 
-/* MAIN TEXT - WHITE */
-.stApp,
-.stApp p,
-.stApp span,
-.stApp label,
-.stApp li,
-.stApp h1,
-.stApp h2,
-.stApp h3,
-.stApp h4,
-.stApp h5,
-.stApp h6,
-.stApp [data-testid="stMarkdownContainer"] {
-    color: #FFFFFF;
-}
-
-/* HEADINGS */
-h1, h2, h3, h4 {
-    color: #FFFFFF !important;
-    font-weight: 800 !important;
-}
-
-/* SECONDARY TEXT */
-.subtitle,
-.stCaption,
-[data-testid="stCaptionContainer"] {
-    color: #CADCFC !important;
-}
-
-/* SIDEBAR */
 section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #00143D, #00246B) !important;
-    border-right: 1px solid rgba(202,220,252,.35);
+    background: linear-gradient(180deg, #FFFFFF, #CADCFC) !important;
+    border-right: 1px solid #91B8F5;
 }
-
-section[data-testid="stSidebar"] p,
-section[data-testid="stSidebar"] span,
-section[data-testid="stSidebar"] label,
-section[data-testid="stSidebar"] div {
-    color: #FFFFFF;
-}
-
-/* SIDEBAR RADIO */
+section[data-testid="stSidebar"] * { color: #000000 !important; }
 section[data-testid="stSidebar"] [role="radiogroup"] label {
-    color: #FFFFFF !important;
+    color: #000000 !important;
+    background: rgba(255,255,255,.55);
+    border-radius: 10px;
+    padding: 5px 8px;
 }
 
-/* HERO */
-.hero {
-    padding: 38px 30px;
-    border-radius: 24px;
-    border: 1px solid rgba(202,220,252,.45);
-    background: linear-gradient(
-        120deg,
-        rgba(202,220,252,.16),
-        rgba(0,36,107,.25)
-    );
-    box-shadow: 0 10px 40px rgba(0,0,0,.20);
-    margin-bottom: 28px;
-}
-
-.hero-title {
-    font-size: clamp(28px, 5vw, 46px);
-    font-weight: 800;
-    color: #FFFFFF !important;
-    letter-spacing: 1px;
-}
-
-.hero-description {
-    color: #CADCFC !important;
-    font-size: 16px;
-    line-height: 1.8;
-}
-
-/* GLASS CARD */
-.glass-card {
-    background: rgba(202,220,252,.09);
-    border: 1px solid rgba(202,220,252,.30);
-    border-radius: 18px;
-    padding: 22px;
-    margin: 12px 0;
-    box-shadow: 0 8px 30px rgba(0,0,0,.15);
-    backdrop-filter: blur(12px);
+/* KHUNG HERO VÀ CÁC THẺ ĐỀU SÁNG */
+.hero, .glass-card {
+    background: linear-gradient(135deg, #FFFFFF, #CADCFC) !important;
+    color: #000000 !important;
+    border: 1px solid #91B8F5 !important;
+    border-radius: 20px;
+    padding: 24px;
+    margin: 12px 0 20px;
+    box-shadow: 0 8px 28px rgba(0,20,61,.14);
+    backdrop-filter: blur(10px);
     transition: all .3s ease;
 }
-
-.glass-card:hover {
-    border-color: #CADCFC;
-    box-shadow: 0 0 22px rgba(202,220,252,.25);
-    transform: translateY(-3px);
+.hero:hover, .glass-card:hover {
+    border-color: #00246B !important;
+    box-shadow: 0 12px 32px rgba(0,36,107,.2);
+    transform: translateY(-2px);
 }
-
-.glass-card h3 {
-    color: #FFFFFF !important;
-}
-
-.glass-card p {
-    color: #CADCFC !important;
-}
+.hero-title, .hero-description, .glass-card h3, .glass-card p,
+.hero *, .glass-card * { color: #000000 !important; }
+.hero-title { font-size: clamp(28px, 5vw, 46px); font-weight: 800; letter-spacing: 1px; }
+.hero-description { font-size: 16px; line-height: 1.8; }
 
 /* BUTTONS */
-.stButton > button,
-.stDownloadButton > button {
-    background: linear-gradient(135deg, #CADCFC, #91B8F5) !important;
-    color: #00246B !important;
-    border: 1px solid #CADCFC !important;
+.stButton > button, .stDownloadButton > button {
+    background: linear-gradient(135deg, #FFFFFF, #CADCFC) !important;
+    color: #000000 !important;
+    border: 1px solid #00246B !important;
     border-radius: 12px !important;
-    font-weight: 700 !important;
+    font-weight: 800 !important;
     transition: all .25s ease;
 }
-
-.stButton > button *,
-.stDownloadButton > button * {
-    color: #00246B !important;
-}
-
-.stButton > button:hover,
-.stDownloadButton > button:hover {
+.stButton > button *, .stDownloadButton > button * { color: #000000 !important; }
+.stButton > button:hover, .stDownloadButton > button:hover {
     background: #FFFFFF !important;
-    box-shadow: 0 0 20px rgba(202,220,252,.55);
+    box-shadow: 0 0 18px rgba(0,36,107,.25);
     transform: translateY(-2px);
 }
 
-/* INPUT */
-.stTextArea textarea,
-.stTextInput input {
-    background: rgba(202,220,252,.10) !important;
-    color: #FFFFFF !important;
-    border: 1px solid rgba(202,220,252,.50) !important;
+/* Ô NHẬP LIỆU VÀ CÁC WIDGET CÓ NỀN SÁNG */
+.stTextArea textarea, .stTextInput input,
+.stNumberInput input, .stDateInput input {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    border: 1px solid #557DBB !important;
     border-radius: 12px !important;
-    caret-color: #CADCFC;
+    caret-color: #000000 !important;
 }
-
-.stTextArea textarea::placeholder,
-.stTextInput input::placeholder {
-    color: #CADCFC !important;
-    opacity: .8;
+.stTextArea textarea::placeholder, .stTextInput input::placeholder {
+    color: #444444 !important; opacity: 1;
 }
-
-/* SELECTBOX */
-.stSelectbox div[data-baseweb="select"] > div {
-    background: #00246B !important;
-    border-color: #CADCFC !important;
-    color: #FFFFFF !important;
+.stSelectbox div[data-baseweb="select"] > div,
+.stMultiSelect div[data-baseweb="select"] > div {
+    background: #FFFFFF !important;
+    border: 1px solid #557DBB !important;
+    color: #000000 !important;
 }
-
-.stSelectbox div[data-baseweb="select"] span {
-    color: #FFFFFF !important;
+.stSelectbox div[data-baseweb="select"] *,
+.stMultiSelect div[data-baseweb="select"] * { color: #000000 !important; }
+div[data-baseweb="popover"], div[data-baseweb="menu"], div[role="listbox"] {
+    background: #FFFFFF !important;
 }
+div[role="option"] { color: #000000 !important; background: #FFFFFF !important; }
+div[role="option"]:hover { background: #CADCFC !important; }
+.stRadio label, .stCheckbox label { color: #000000 !important; }
 
-/* DROPDOWN OPTIONS */
-div[data-baseweb="popover"],
-div[data-baseweb="menu"],
-div[role="listbox"] {
-    background: #00246B !important;
-}
-
-div[role="option"] {
-    color: #FFFFFF !important;
-    background: #00246B !important;
-}
-
-div[role="option"]:hover {
-    background: #16458C !important;
-}
-
-/* RADIO AND CHECKBOX */
-.stRadio label,
-.stCheckbox label {
-    color: #FFFFFF !important;
-}
-
-/* METRICS */
+/* METRICS, ALERTS, DATAFRAME, TABS */
 [data-testid="stMetric"] {
-    background: rgba(202,220,252,.10);
-    border: 1px solid rgba(202,220,252,.30);
+    background: #FFFFFF !important;
+    border: 1px solid #91B8F5 !important;
     padding: 18px;
     border-radius: 16px;
 }
-
-[data-testid="stMetricLabel"] {
-    color: #CADCFC !important;
-}
-
-[data-testid="stMetricValue"] {
-    color: #FFFFFF !important;
-}
-
-[data-testid="stMetricDelta"] {
-    color: #CADCFC !important;
-}
-
-/* PROGRESS */
-.stProgress > div > div > div > div {
-    background-color: #CADCFC;
-}
-
-/* ALERTS */
+[data-testid="stMetricLabel"], [data-testid="stMetricValue"],
+[data-testid="stMetricDelta"] { color: #000000 !important; }
 div[data-testid="stAlert"] {
+    background: #FFFFFF !important;
+    border: 1px solid #91B8F5 !important;
     border-radius: 14px;
 }
-
-div[data-testid="stAlert"] p,
-div[data-testid="stAlert"] span {
-    color: #FFFFFF !important;
-}
-
-/* DATAFRAME */
-[data-testid="stDataFrame"] {
-    border: 1px solid rgba(202,220,252,.4);
+div[data-testid="stAlert"] * { color: #000000 !important; }
+[data-testid="stDataFrame"], [data-testid="stTable"] {
+    background: #FFFFFF !important;
+    border: 1px solid #91B8F5 !important;
     border-radius: 12px;
 }
-
-/* TABS */
-.stTabs [data-baseweb="tab"] {
-    color: #CADCFC !important;
+.stTabs [data-baseweb="tab"], .stTabs [aria-selected="true"] {
+    color: #000000 !important;
 }
+.stProgress > div > div > div > div { background-color: #00246B !important; }
+a { color: #00246B !important; }
+hr { border-color: #91B8F5 !important; }
 
-.stTabs [aria-selected="true"] {
-    color: #FFFFFF !important;
-}
-
-/* DIVIDER */
-hr {
-    border-color: rgba(202,220,252,.30);
-}
-
-/* LINKS */
-a {
-    color: #CADCFC !important;
-}
-
-/* STAR EFFECT */
+/* HIỆU ỨNG SAO TRÊN NỀN TỐI */
 .stApp::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    opacity: .45;
+    content: ""; position: fixed; inset: 0; pointer-events: none;
+    z-index: 0; opacity: .35;
     background-image:
         radial-gradient(2px 2px at 10% 20%, #CADCFC 50%, transparent 100%),
-        radial-gradient(2px 2px at 25% 75%, white 50%, transparent 100%),
+        radial-gradient(2px 2px at 25% 75%, #FFFFFF 50%, transparent 100%),
         radial-gradient(1.5px 1.5px at 45% 35%, #CADCFC 50%, transparent 100%),
-        radial-gradient(2px 2px at 70% 15%, white 50%, transparent 100%),
+        radial-gradient(2px 2px at 70% 15%, #FFFFFF 50%, transparent 100%),
         radial-gradient(1.5px 1.5px at 85% 65%, #CADCFC 50%, transparent 100%),
-        radial-gradient(2px 2px at 95% 35%, white 50%, transparent 100%);
+        radial-gradient(2px 2px at 95% 35%, #FFFFFF 50%, transparent 100%);
     background-size: 350px 350px;
     animation: starsMove 35s linear infinite;
 }
-
-@keyframes starsMove {
-    from { transform: translateY(0); }
-    to { transform: translateY(-350px); }
-}
-
-/* FOOTER */
-footer {
-    visibility: hidden;
-}
-
-#MainMenu {
-    visibility: hidden;
-}
-
-/* =====================================================
-   BLACK TEXT MODE - TOAN BO CHU MAU DEN
-   Nen duoc lam sang de chu den de doc ro rang.
-   ===================================================== */
-.stApp {
-    background:
-        radial-gradient(ellipse at 15% 20%, rgba(0,36,107,.10), transparent 35%),
-        radial-gradient(ellipse at 85% 75%, rgba(80,130,220,.14), transparent 40%),
-        linear-gradient(135deg, #CADCFC, #FFFFFF, #CADCFC) !important;
-    color: #000000 !important;
-}
-
-/* Tất cả chữ trong ứng dụng */
-.stApp,
-.stApp *,
-.stApp *::before,
-.stApp *::after,
-header[data-testid="stHeader"],
-header[data-testid="stHeader"] *,
-section[data-testid="stSidebar"],
-section[data-testid="stSidebar"] *,
-div[data-baseweb="popover"],
-div[data-baseweb="popover"] *,
-div[data-baseweb="menu"],
-div[data-baseweb="menu"] *,
-div[role="listbox"],
-div[role="listbox"] *,
-div[role="option"],
-div[role="option"] * {
-    color: #000000 !important;
-}
-
-/* Nền sáng cho các khu vực nội dung */
-header[data-testid="stHeader"] {
-    background: rgba(202,220,252,.96) !important;
-}
-section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #FFFFFF, #CADCFC) !important;
-}
-.hero {
-    background: linear-gradient(120deg, rgba(255,255,255,.96), rgba(202,220,252,.92)) !important;
-    border-color: rgba(0,36,107,.25) !important;
-}
-.glass-card {
-    background: rgba(255,255,255,.92) !important;
-    border-color: rgba(0,36,107,.22) !important;
-}
-[data-testid="stMetric"] {
-    background: rgba(255,255,255,.92) !important;
-    border-color: rgba(0,36,107,.22) !important;
-}
-.stTextArea textarea,
-.stTextInput input,
-.stSelectbox div[data-baseweb="select"] > div,
-div[data-baseweb="popover"],
-div[data-baseweb="menu"],
-div[role="listbox"],
-div[role="option"] {
-    background: #FFFFFF !important;
-}
-.stTextArea textarea,
-.stTextInput input {
-    caret-color: #000000 !important;
-}
-.stTextArea textarea::placeholder,
-.stTextInput input::placeholder {
-    color: #000000 !important;
-    opacity: .65 !important;
-}
-.stButton > button,
-.stDownloadButton > button {
-    background: #CADCFC !important;
-    color: #000000 !important;
-    border-color: #00246B !important;
-}
-.stButton > button *,
-.stDownloadButton > button * {
-    color: #000000 !important;
-}
-div[role="option"]:hover {
-    background: #CADCFC !important;
-}
-a {
-    color: #000000 !important;
-}
-
+@keyframes starsMove { from { transform: translateY(0); } to { transform: translateY(-350px); } }
+footer, #MainMenu { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
