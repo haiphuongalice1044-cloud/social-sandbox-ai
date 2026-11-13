@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 
 # =====================================================
-# 1. CẤU HÌNH
+# 1. CONFIGURATION
 # =====================================================
 
 st.set_page_config(
@@ -14,8 +14,12 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+NAVY = "#00246B"
+ICE = "#CADCFC"
+WHITE = "#FFFFFF"
+
 # =====================================================
-# 2. GIAO DIỆN TOÀN BỘ WEBSITE
+# 2. CSS - NAVY COSMIC INTERFACE
 # =====================================================
 
 st.markdown("""
@@ -25,21 +29,22 @@ st.markdown("""
 :root {
     --navy: #00246B;
     --ice: #CADCFC;
+    --white: #FFFFFF;
 }
 
-/* TOÀN BỘ TRANG */
+/* GLOBAL */
 html, body, [class*="css"] {
-    font-family: 'Be Vietnam Pro', sans-serif;
+    font-family: 'Be Vietnam Pro', sans-serif !important;
 }
 
 .stApp {
     background:
-        radial-gradient(circle at 15% 20%, rgba(202,220,252,.18), transparent 35%),
-        radial-gradient(circle at 85% 75%, rgba(80,130,220,.20), transparent 40%),
+        radial-gradient(ellipse at 15% 20%, rgba(202,220,252,.18), transparent 35%),
+        radial-gradient(ellipse at 85% 75%, rgba(80,130,220,.20), transparent 40%),
         linear-gradient(135deg, #00246B, #00143D, #00246B);
     background-size: 200% 200%;
     animation: backgroundMove 18s ease infinite;
-    color: white;
+    color: #FFFFFF !important;
 }
 
 @keyframes backgroundMove {
@@ -48,14 +53,14 @@ html, body, [class*="css"] {
     100% { background-position: 0% 0%; }
 }
 
-/* THAY THANH HEADER MÀU ĐEN */
+/* TOP HEADER */
 header[data-testid="stHeader"] {
     background: #00246B !important;
     border-bottom: 1px solid rgba(202,220,252,.35);
 }
 
-header[data-testid="stHeader"] button {
-    color: #CADCFC !important;
+header[data-testid="stHeader"] * {
+    color: #FFFFFF !important;
 }
 
 [data-testid="stToolbar"] {
@@ -64,11 +69,34 @@ header[data-testid="stHeader"] button {
 
 [data-testid="stDecoration"] {
     background: #CADCFC !important;
-    height: 2px !important;
 }
 
-/* MENU BA CHẤM */
-[data-testid="stMainMenu"] {
+/* MAIN TEXT - WHITE */
+.stApp,
+.stApp p,
+.stApp span,
+.stApp label,
+.stApp li,
+.stApp h1,
+.stApp h2,
+.stApp h3,
+.stApp h4,
+.stApp h5,
+.stApp h6,
+.stApp [data-testid="stMarkdownContainer"] {
+    color: #FFFFFF;
+}
+
+/* HEADINGS */
+h1, h2, h3, h4 {
+    color: #FFFFFF !important;
+    font-weight: 800 !important;
+}
+
+/* SECONDARY TEXT */
+.subtitle,
+.stCaption,
+[data-testid="stCaptionContainer"] {
     color: #CADCFC !important;
 }
 
@@ -78,24 +106,16 @@ section[data-testid="stSidebar"] {
     border-right: 1px solid rgba(202,220,252,.35);
 }
 
-section[data-testid="stSidebar"] * {
-    color: white;
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] div {
+    color: #FFFFFF;
 }
 
-/* NỘI DUNG CHÍNH */
-.main .block-container {
-    padding-top: 2rem;
-    padding-bottom: 3rem;
-}
-
-/* TIÊU ĐỀ */
-h1, h2, h3 {
+/* SIDEBAR RADIO */
+section[data-testid="stSidebar"] [role="radiogroup"] label {
     color: #FFFFFF !important;
-    font-weight: 800 !important;
-}
-
-p, li, label {
-    color: #EAF1FF;
 }
 
 /* HERO */
@@ -115,17 +135,17 @@ p, li, label {
 .hero-title {
     font-size: clamp(28px, 5vw, 46px);
     font-weight: 800;
-    color: white;
+    color: #FFFFFF !important;
     letter-spacing: 1px;
 }
 
 .hero-description {
-    color: #CADCFC;
+    color: #CADCFC !important;
     font-size: 16px;
     line-height: 1.8;
 }
 
-/* THẺ KÍNH */
+/* GLASS CARD */
 .glass-card {
     background: rgba(202,220,252,.09);
     border: 1px solid rgba(202,220,252,.30);
@@ -143,7 +163,15 @@ p, li, label {
     transform: translateY(-3px);
 }
 
-/* NÚT BẤM */
+.glass-card h3 {
+    color: #FFFFFF !important;
+}
+
+.glass-card p {
+    color: #CADCFC !important;
+}
+
+/* BUTTONS */
 .stButton > button,
 .stDownloadButton > button {
     background: linear-gradient(135deg, #CADCFC, #91B8F5) !important;
@@ -154,6 +182,11 @@ p, li, label {
     transition: all .25s ease;
 }
 
+.stButton > button *,
+.stDownloadButton > button * {
+    color: #00246B !important;
+}
+
 .stButton > button:hover,
 .stDownloadButton > button:hover {
     background: #FFFFFF !important;
@@ -161,34 +194,56 @@ p, li, label {
     transform: translateY(-2px);
 }
 
-/* Ô NHẬP */
+/* INPUT */
 .stTextArea textarea,
 .stTextInput input {
     background: rgba(202,220,252,.10) !important;
-    color: white !important;
+    color: #FFFFFF !important;
     border: 1px solid rgba(202,220,252,.50) !important;
     border-radius: 12px !important;
+    caret-color: #CADCFC;
 }
 
 .stTextArea textarea::placeholder,
 .stTextInput input::placeholder {
     color: #CADCFC !important;
+    opacity: .8;
 }
 
 /* SELECTBOX */
 .stSelectbox div[data-baseweb="select"] > div {
-    background: #00246B;
-    border-color: #CADCFC;
-    color: white;
+    background: #00246B !important;
+    border-color: #CADCFC !important;
+    color: #FFFFFF !important;
 }
 
-/* CHECKBOX VÀ RADIO */
-.stCheckbox label,
-.stRadio label {
-    color: white !important;
+.stSelectbox div[data-baseweb="select"] span {
+    color: #FFFFFF !important;
 }
 
-/* METRIC */
+/* DROPDOWN OPTIONS */
+div[data-baseweb="popover"],
+div[data-baseweb="menu"],
+div[role="listbox"] {
+    background: #00246B !important;
+}
+
+div[role="option"] {
+    color: #FFFFFF !important;
+    background: #00246B !important;
+}
+
+div[role="option"]:hover {
+    background: #16458C !important;
+}
+
+/* RADIO AND CHECKBOX */
+.stRadio label,
+.stCheckbox label {
+    color: #FFFFFF !important;
+}
+
+/* METRICS */
 [data-testid="stMetric"] {
     background: rgba(202,220,252,.10);
     border: 1px solid rgba(202,220,252,.30);
@@ -201,38 +256,54 @@ p, li, label {
 }
 
 [data-testid="stMetricValue"] {
-    color: white !important;
+    color: #FFFFFF !important;
 }
 
-/* TIẾN TRÌNH */
+[data-testid="stMetricDelta"] {
+    color: #CADCFC !important;
+}
+
+/* PROGRESS */
 .stProgress > div > div > div > div {
     background-color: #CADCFC;
 }
 
-/* BẢNG */
+/* ALERTS */
+div[data-testid="stAlert"] {
+    border-radius: 14px;
+}
+
+div[data-testid="stAlert"] p,
+div[data-testid="stAlert"] span {
+    color: #FFFFFF !important;
+}
+
+/* DATAFRAME */
 [data-testid="stDataFrame"] {
     border: 1px solid rgba(202,220,252,.4);
     border-radius: 12px;
 }
 
-/* THÔNG BÁO */
-div[data-testid="stAlert"] {
-    border-radius: 14px;
+/* TABS */
+.stTabs [data-baseweb="tab"] {
+    color: #CADCFC !important;
 }
 
-/* ĐƯỜNG KẺ */
+.stTabs [aria-selected="true"] {
+    color: #FFFFFF !important;
+}
+
+/* DIVIDER */
 hr {
     border-color: rgba(202,220,252,.30);
 }
 
-/* CHỮ NHẤN */
-.subtitle {
-    color: #CADCFC;
-    font-size: 14px;
-    letter-spacing: 2px;
+/* LINKS */
+a {
+    color: #CADCFC !important;
 }
 
-/* SAO TRÊN NỀN */
+/* STAR EFFECT */
 .stApp::before {
     content: "";
     position: fixed;
@@ -256,10 +327,11 @@ hr {
     to { transform: translateY(-350px); }
 }
 
-/* CHÂN TRANG */
+/* FOOTER */
 footer {
     visibility: hidden;
 }
+
 #MainMenu {
     visibility: hidden;
 }
@@ -268,7 +340,7 @@ footer {
 
 
 # =====================================================
-# 3. KHỞI TẠO DỮ LIỆU
+# 3. SESSION STATE
 # =====================================================
 
 defaults = {
@@ -285,7 +357,7 @@ for key, value in defaults.items():
 
 
 # =====================================================
-# 4. PHÂN TÍCH TỪ KHÓA CƠ BẢN
+# 4. BASIC ANALYSIS
 # =====================================================
 
 RISK_KEYWORDS = {
@@ -395,7 +467,7 @@ with st.sidebar:
     st.markdown("""
     <div style="text-align:center;padding:18px 5px;">
         <div style="font-size:48px;">🌌</div>
-        <div style="font-size:21px;font-weight:800;">
+        <div style="font-size:21px;font-weight:800;color:#FFFFFF;">
             SOCIAL SANDBOX
         </div>
         <div style="font-size:11px;color:#CADCFC;letter-spacing:2px;">
@@ -422,7 +494,7 @@ with st.sidebar:
 
     st.markdown("""
     <div style="text-align:center;color:#CADCFC;font-size:12px;">
-        <b>VERSION 2.1</b><br>
+        <b>VERSION 2.2</b><br>
         Educational Research Project<br>
         Think Before You Share
     </div>
@@ -430,7 +502,7 @@ with st.sidebar:
 
 
 # =====================================================
-# 7. TỔNG QUAN
+# 7. OVERVIEW
 # =====================================================
 
 if menu == "🏠 Tổng quan":
@@ -493,7 +565,7 @@ if menu == "🏠 Tổng quan":
 
 
 # =====================================================
-# 8. PHÂN TÍCH AI
+# 8. AI ANALYSIS
 # =====================================================
 
 elif menu == "🔍 Phân tích thông tin bằng AI":
@@ -545,7 +617,6 @@ elif menu == "🔍 Phân tích thông tin bằng AI":
             c2.metric("Mức đánh giá", level)
 
             st.caption("Điểm số là chỉ báo dựa trên nhóm từ khóa, không phải xác suất tin giả.")
-
             st.progress(score / 100)
 
             st.markdown("### 🧩 Dấu hiệu phát hiện")
@@ -573,7 +644,7 @@ elif menu == "🔍 Phân tích thông tin bằng AI":
 
 
 # =====================================================
-# 9. PHÒNG KIỂM CHỨNG
+# 9. VERIFICATION ROOM
 # =====================================================
 
 elif menu == "🛡️ Phòng kiểm chứng":
@@ -636,7 +707,7 @@ elif menu == "🛡️ Phòng kiểm chứng":
 
 
 # =====================================================
-# 10. MÔ PHỎNG MẠNG XÃ HỘI
+# 10. SOCIAL MEDIA SIMULATION
 # =====================================================
 
 elif menu == "🎭 Mô phỏng mạng xã hội":
@@ -727,7 +798,7 @@ elif menu == "🎭 Mô phỏng mạng xã hội":
 
 
 # =====================================================
-# 11. PHẢN HỒI THÍCH ỨNG
+# 11. ADAPTIVE FEEDBACK
 # =====================================================
 
 elif menu == "🧠 Phản hồi thích ứng":
@@ -806,7 +877,7 @@ elif menu == "🧠 Phản hồi thích ứng":
 
 
 # =====================================================
-# 12. THỐNG KÊ NGHIÊN CỨU
+# 12. RESEARCH STATISTICS
 # =====================================================
 
 elif menu == "📊 Thống kê nghiên cứu":
@@ -834,12 +905,15 @@ elif menu == "📊 Thống kê nghiên cứu":
 
         df = pd.DataFrame(st.session_state.records)
 
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        st.dataframe(
+            df,
+            use_container_width=True,
+            hide_index=True
+        )
 
         st.markdown("## ✦ Biểu đồ hoạt động")
 
         chart = df["Hoạt động"].value_counts()
-
         st.bar_chart(chart)
 
         csv = df.to_csv(index=False, encoding="utf-8-sig")
@@ -862,7 +936,7 @@ elif menu == "📊 Thống kê nghiên cứu":
 
 
 # =====================================================
-# 13. CHÂN TRANG
+# 13. FOOTER
 # =====================================================
 
 st.markdown("---")
@@ -875,9 +949,10 @@ st.markdown("""
     font-size:12px;
 ">
     <div style="font-size:28px;">🌌</div>
-    <b>SOCIAL SANDBOX AI</b><br>
+    <b style="color:#FFFFFF;">SOCIAL SANDBOX AI</b><br>
     DIGITAL LITERACY LAB<br><br>
     THINK BEFORE YOU SHARE<br>
-    EDUCATIONAL RESEARCH PROJECT • VERSION 2.1
+    EDUCATIONAL RESEARCH PROJECT • VERSION 2.2
 </div>
 """, unsafe_allow_html=True)
+
