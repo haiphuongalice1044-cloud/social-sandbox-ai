@@ -1,13 +1,11 @@
 
 import streamlit as st
 import pandas as pd
-import re
-import random
 from datetime import datetime
 
-# =========================================================
-# 1. CẤU HÌNH ỨNG DỤNG
-# =========================================================
+# =====================================================
+# 1. CẤU HÌNH
+# =====================================================
 
 st.set_page_config(
     page_title="Social Sandbox AI",
@@ -16,32 +14,28 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-PRIMARY = "#00246B"
-SECONDARY = "#CADCFC"
-
-# =========================================================
-# 2. CSS - GIAO DIỆN XANH NAVY VŨ TRỤ
-# =========================================================
+# =====================================================
+# 2. GIAO DIỆN TOÀN BỘ WEBSITE
+# =====================================================
 
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-    --primary: #00246B;
-    --secondary: #CADCFC;
-    --white: #FFFFFF;
+    --navy: #00246B;
+    --ice: #CADCFC;
 }
 
+/* TOÀN BỘ TRANG */
 html, body, [class*="css"] {
     font-family: 'Be Vietnam Pro', sans-serif;
 }
 
-/* NỀN CHÍNH */
 .stApp {
     background:
-        radial-gradient(ellipse at 15% 20%, rgba(202,220,252,.17), transparent 35%),
-        radial-gradient(ellipse at 85% 75%, rgba(80,130,220,.20), transparent 40%),
+        radial-gradient(circle at 15% 20%, rgba(202,220,252,.18), transparent 35%),
+        radial-gradient(circle at 85% 75%, rgba(80,130,220,.20), transparent 40%),
         linear-gradient(135deg, #00246B, #00143D, #00246B);
     background-size: 200% 200%;
     animation: backgroundMove 18s ease infinite;
@@ -54,21 +48,44 @@ html, body, [class*="css"] {
     100% { background-position: 0% 0%; }
 }
 
-/* ẨN HEADER */
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
+/* THAY THANH HEADER MÀU ĐEN */
 header[data-testid="stHeader"] {
-    background: transparent;
+    background: #00246B !important;
+    border-bottom: 1px solid rgba(202,220,252,.35);
 }
 
-/* THANH SIDEBAR */
+header[data-testid="stHeader"] button {
+    color: #CADCFC !important;
+}
+
+[data-testid="stToolbar"] {
+    background: transparent !important;
+}
+
+[data-testid="stDecoration"] {
+    background: #CADCFC !important;
+    height: 2px !important;
+}
+
+/* MENU BA CHẤM */
+[data-testid="stMainMenu"] {
+    color: #CADCFC !important;
+}
+
+/* SIDEBAR */
 section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #00143D, #00246B);
+    background: linear-gradient(180deg, #00143D, #00246B) !important;
     border-right: 1px solid rgba(202,220,252,.35);
 }
 
 section[data-testid="stSidebar"] * {
-    color: #FFFFFF;
+    color: white;
+}
+
+/* NỘI DUNG CHÍNH */
+.main .block-container {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
 }
 
 /* TIÊU ĐỀ */
@@ -77,46 +94,22 @@ h1, h2, h3 {
     font-weight: 800 !important;
 }
 
-p, label, li {
+p, li, label {
     color: #EAF1FF;
-}
-
-/* TIÊU ĐỀ PHỤ */
-.subtitle {
-    color: #CADCFC;
-    font-size: 15px;
-    letter-spacing: 1px;
-}
-
-/* THẺ KÍNH */
-.glass-card {
-    background: rgba(202,220,252,.09);
-    border: 1px solid rgba(202,220,252,.30);
-    border-radius: 18px;
-    padding: 22px;
-    margin: 10px 0;
-    box-shadow: 0 8px 30px rgba(0,0,0,.15);
-    backdrop-filter: blur(12px);
-    transition: all .3s ease;
-}
-
-.glass-card:hover {
-    border-color: #CADCFC;
-    box-shadow: 0 0 22px rgba(202,220,252,.20);
-    transform: translateY(-3px);
 }
 
 /* HERO */
 .hero {
-    padding: 35px 28px;
+    padding: 38px 30px;
     border-radius: 24px;
     border: 1px solid rgba(202,220,252,.45);
-    background:
-        linear-gradient(120deg,
+    background: linear-gradient(
+        120deg,
         rgba(202,220,252,.16),
-        rgba(0,36,107,.25));
+        rgba(0,36,107,.25)
+    );
     box-shadow: 0 10px 40px rgba(0,0,0,.20);
-    margin-bottom: 25px;
+    margin-bottom: 28px;
 }
 
 .hero-title {
@@ -132,25 +125,43 @@ p, label, li {
     line-height: 1.8;
 }
 
+/* THẺ KÍNH */
+.glass-card {
+    background: rgba(202,220,252,.09);
+    border: 1px solid rgba(202,220,252,.30);
+    border-radius: 18px;
+    padding: 22px;
+    margin: 12px 0;
+    box-shadow: 0 8px 30px rgba(0,0,0,.15);
+    backdrop-filter: blur(12px);
+    transition: all .3s ease;
+}
+
+.glass-card:hover {
+    border-color: #CADCFC;
+    box-shadow: 0 0 22px rgba(202,220,252,.25);
+    transform: translateY(-3px);
+}
+
 /* NÚT BẤM */
-.stButton > button {
-    background: linear-gradient(135deg, #CADCFC, #91B8F5);
+.stButton > button,
+.stDownloadButton > button {
+    background: linear-gradient(135deg, #CADCFC, #91B8F5) !important;
     color: #00246B !important;
-    border: 1px solid #CADCFC;
-    border-radius: 12px;
-    font-weight: 700;
-    padding: 10px 20px;
+    border: 1px solid #CADCFC !important;
+    border-radius: 12px !important;
+    font-weight: 700 !important;
     transition: all .25s ease;
 }
 
-.stButton > button:hover {
-    background: #FFFFFF;
-    color: #00246B !important;
+.stButton > button:hover,
+.stDownloadButton > button:hover {
+    background: #FFFFFF !important;
     box-shadow: 0 0 20px rgba(202,220,252,.55);
     transform: translateY(-2px);
 }
 
-/* Ô NHẬP LIỆU */
+/* Ô NHẬP */
 .stTextArea textarea,
 .stTextInput input {
     background: rgba(202,220,252,.10) !important;
@@ -166,14 +177,15 @@ p, label, li {
 
 /* SELECTBOX */
 .stSelectbox div[data-baseweb="select"] > div {
-    background: rgba(202,220,252,.12);
-    border-color: rgba(202,220,252,.45);
+    background: #00246B;
+    border-color: #CADCFC;
     color: white;
 }
 
-/* RADIO */
+/* CHECKBOX VÀ RADIO */
+.stCheckbox label,
 .stRadio label {
-    color: #FFFFFF !important;
+    color: white !important;
 }
 
 /* METRIC */
@@ -192,9 +204,20 @@ p, label, li {
     color: white !important;
 }
 
-/* THANH TIẾN TRÌNH */
+/* TIẾN TRÌNH */
 .stProgress > div > div > div > div {
     background-color: #CADCFC;
+}
+
+/* BẢNG */
+[data-testid="stDataFrame"] {
+    border: 1px solid rgba(202,220,252,.4);
+    border-radius: 12px;
+}
+
+/* THÔNG BÁO */
+div[data-testid="stAlert"] {
+    border-radius: 14px;
 }
 
 /* ĐƯỜNG KẺ */
@@ -202,7 +225,14 @@ hr {
     border-color: rgba(202,220,252,.30);
 }
 
-/* HIỆU ỨNG SAO */
+/* CHỮ NHẤN */
+.subtitle {
+    color: #CADCFC;
+    font-size: 14px;
+    letter-spacing: 2px;
+}
+
+/* SAO TRÊN NỀN */
 .stApp::before {
     content: "";
     position: fixed;
@@ -212,12 +242,11 @@ hr {
     opacity: .45;
     background-image:
         radial-gradient(2px 2px at 10% 20%, #CADCFC 50%, transparent 100%),
-        radial-gradient(2px 2px at 25% 75%, #FFFFFF 50%, transparent 100%),
+        radial-gradient(2px 2px at 25% 75%, white 50%, transparent 100%),
         radial-gradient(1.5px 1.5px at 45% 35%, #CADCFC 50%, transparent 100%),
-        radial-gradient(2px 2px at 70% 15%, #FFFFFF 50%, transparent 100%),
+        radial-gradient(2px 2px at 70% 15%, white 50%, transparent 100%),
         radial-gradient(1.5px 1.5px at 85% 65%, #CADCFC 50%, transparent 100%),
-        radial-gradient(2px 2px at 95% 35%, #FFFFFF 50%, transparent 100%),
-        radial-gradient(1px 1px at 55% 85%, #CADCFC 50%, transparent 100%);
+        radial-gradient(2px 2px at 95% 35%, white 50%, transparent 100%);
     background-size: 350px 350px;
     animation: starsMove 35s linear infinite;
 }
@@ -227,119 +256,98 @@ hr {
     to { transform: translateY(-350px); }
 }
 
-/* THÔNG BÁO */
-div[data-testid="stAlert"] {
-    border-radius: 14px;
+/* CHÂN TRANG */
+footer {
+    visibility: hidden;
 }
-
-/* LINK */
-a {
-    color: #CADCFC !important;
+#MainMenu {
+    visibility: hidden;
 }
 </style>
 """, unsafe_allow_html=True)
 
 
-# =========================================================
+# =====================================================
 # 3. KHỞI TẠO DỮ LIỆU
-# =========================================================
+# =====================================================
 
-if "records" not in st.session_state:
-    st.session_state.records = []
+defaults = {
+    "records": [],
+    "analysis_count": 0,
+    "verified_count": 0,
+    "reflection_count": 0,
+    "scenario_done": 0
+}
 
-if "analysis_count" not in st.session_state:
-    st.session_state.analysis_count = 0
-
-if "verified_count" not in st.session_state:
-    st.session_state.verified_count = 0
-
-if "reflection_count" not in st.session_state:
-    st.session_state.reflection_count = 0
-
-if "scenario_done" not in st.session_state:
-    st.session_state.scenario_done = 0
-
-if "pre_score" not in st.session_state:
-    st.session_state.pre_score = None
-
-if "post_score" not in st.session_state:
-    st.session_state.post_score = None
+for key, value in defaults.items():
+    if key not in st.session_state:
+        st.session_state[key] = value
 
 
-# =========================================================
-# 4. HÀM PHÂN TÍCH CƠ BẢN
-# =========================================================
+# =====================================================
+# 4. PHÂN TÍCH TỪ KHÓA CƠ BẢN
+# =====================================================
 
 RISK_KEYWORDS = {
     "Ngôn ngữ giật gân": [
-        "sốc", "kinh hoàng", "chấn động", "không thể tin",
-        "bí mật động trời", "gây sốc"
+        "sốc", "kinh hoàng", "chấn động",
+        "không thể tin", "bí mật động trời"
     ],
     "Thúc giục chia sẻ": [
-        "chia sẻ ngay", "share ngay", "gửi cho mọi người",
-        "lan truyền", "đừng bỏ lỡ"
+        "chia sẻ ngay", "share ngay",
+        "gửi cho mọi người", "đừng bỏ lỡ"
     ],
     "Thiếu nguồn rõ ràng": [
-        "nghe nói", "người ta bảo", "theo nguồn tin",
-        "một người bạn", "tin nội bộ"
+        "nghe nói", "người ta bảo",
+        "theo nguồn tin", "một người bạn"
     ],
     "Khẳng định tuyệt đối": [
-        "100%", "chắc chắn", "tất cả đều", "không bao giờ",
-        "luôn luôn", "hoàn toàn đúng"
+        "100%", "chắc chắn", "tất cả đều",
+        "không bao giờ", "luôn luôn"
     ],
     "Tạo áp lực và sợ hãi": [
-        "nguy hiểm", "khẩn cấp", "sắp bị", "cảnh báo ngay",
-        "nếu không sẽ", "hãy cẩn thận"
+        "nguy hiểm", "khẩn cấp",
+        "cảnh báo ngay", "nếu không sẽ"
     ]
 }
 
 
 def basic_analysis(content):
-    found_categories = []
-
+    found = []
     text = content.lower()
 
     for category, keywords in RISK_KEYWORDS.items():
         matched = [word for word in keywords if word in text]
         if matched:
-            found_categories.append({
+            found.append({
                 "category": category,
                 "keywords": matched
             })
 
-    score = min(len(found_categories) * 20, 100)
+    score = min(len(found) * 20, 100)
 
     if score >= 60:
         level = "Cần kiểm chứng kỹ"
-        advice = "Nội dung có nhiều dấu hiệu cần chú ý. Em nên kiểm tra nguồn và tìm thêm thông tin trước khi chia sẻ."
+        advice = "Nội dung có nhiều dấu hiệu cần chú ý. Hãy kiểm tra nguồn và tìm thêm bằng chứng."
     elif score >= 20:
         level = "Cần thận trọng"
-        advice = "Nội dung có một số dấu hiệu đáng chú ý. Hãy kiểm tra nguồn và đối chiếu với thông tin đáng tin cậy."
+        advice = "Nội dung có một số dấu hiệu đáng chú ý. Nên đối chiếu với các nguồn độc lập."
     else:
         level = "Ít dấu hiệu cảnh báo"
-        advice = "Chưa phát hiện nhiều dấu hiệu rủi ro theo bộ từ khóa cơ bản. Điều này không đồng nghĩa nội dung chắc chắn đúng."
+        advice = "Chưa phát hiện nhiều dấu hiệu theo bộ từ khóa. Điều này không chứng minh nội dung là đúng."
 
-    return {
-        "score": score,
-        "level": level,
-        "categories": found_categories,
-        "advice": advice
-    }
+    return score, level, found, advice
 
 
-# =========================================================
-# 5. HÀM PHÂN TÍCH GEMINI
-# =========================================================
-
-def get_api_key():
-    try:
-        return st.secrets.get("GEMINI_API_KEY", "")
-    except Exception:
-        return ""
-
+# =====================================================
+# 5. GEMINI AI
+# =====================================================
 
 def gemini_analysis(content):
-    api_key = get_api_key()
+    try:
+        api_key = st.secrets.get("GEMINI_API_KEY", "")
+    except Exception:
+        api_key = ""
 
     if not api_key:
         return None, "Chưa cấu hình Gemini API Key."
@@ -350,37 +358,21 @@ def gemini_analysis(content):
         client = genai.Client(api_key=api_key)
 
         prompt = f"""
-Bạn là trợ lý giáo dục trong dự án Social Sandbox AI,
-giúp học sinh trung học rèn luyện kỹ năng xác thực thông tin số.
+Bạn là trợ lý giáo dục của dự án Social Sandbox AI.
 
-Hãy phân tích nội dung dưới đây bằng tiếng Việt.
+Hãy phân tích nội dung sau bằng tiếng Việt:
 
-NỘI DUNG:
 {content}
 
-Trình bày theo các mục:
+Trình bày:
+1. Tóm tắt nội dung.
+2. Dấu hiệu đáng chú ý.
+3. Đánh giá nguồn thông tin.
+4. Ba câu hỏi tư duy phản biện.
+5. Khuyến nghị trước khi chia sẻ.
 
-1. TÓM TẮT:
-Nội dung đang muốn truyền tải điều gì?
-
-2. DẤU HIỆU ĐÁNG CHÚ Ý:
-Có ngôn ngữ giật gân, thúc giục chia sẻ,
-thiếu nguồn, khẳng định tuyệt đối hay tạo áp lực không?
-
-3. NGUỒN THÔNG TIN:
-Nội dung có cung cấp nguồn cụ thể không?
-Cần kiểm tra những thông tin nào?
-
-4. CÂU HỎI TƯ DUY:
-Đưa ra 3 câu hỏi giúp học sinh suy nghĩ phản biện.
-
-5. KHUYẾN NGHỊ:
-Nên làm gì trước khi tin hoặc chia sẻ?
-
-LƯU Ý:
-Không tự khẳng định nội dung là thật hoặc giả nếu chưa có bằng chứng.
-Không bịa nguồn kiểm chứng.
-Đây là phân tích dấu hiệu, không phải kết luận xác thực sự thật.
+Không tự kết luận nội dung đúng hoặc sai khi chưa có bằng chứng.
+Không bịa nguồn xác thực.
 """
 
         response = client.models.generate_content(
@@ -391,21 +383,22 @@ Không bịa nguồn kiểm chứng.
         return response.text, None
 
     except Exception as e:
-        return None, f"Không thể kết nối Gemini: {str(e)}"
+        return None, str(e)
 
 
-# =========================================================
-# 6. THANH ĐIỀU HƯỚNG
-# =========================================================
+# =====================================================
+# 6. SIDEBAR
+# =====================================================
 
 with st.sidebar:
+
     st.markdown("""
-    <div style="text-align:center; padding:15px 5px;">
+    <div style="text-align:center;padding:18px 5px;">
         <div style="font-size:48px;">🌌</div>
-        <div style="font-size:22px; font-weight:800; color:#FFFFFF;">
+        <div style="font-size:21px;font-weight:800;">
             SOCIAL SANDBOX
         </div>
-        <div style="font-size:11px; color:#CADCFC; letter-spacing:2px;">
+        <div style="font-size:11px;color:#CADCFC;letter-spacing:2px;">
             DIGITAL LITERACY LAB
         </div>
     </div>
@@ -422,24 +415,23 @@ with st.sidebar:
             "🎭 Mô phỏng mạng xã hội",
             "🧠 Phản hồi thích ứng",
             "📊 Thống kê nghiên cứu"
-        ],
-        label_visibility="visible"
+        ]
     )
 
     st.divider()
 
     st.markdown("""
-    <div style="text-align:center; color:#CADCFC; font-size:12px;">
-        <b>PHIÊN BẢN 2.0</b><br>
+    <div style="text-align:center;color:#CADCFC;font-size:12px;">
+        <b>VERSION 2.1</b><br>
         Educational Research Project<br>
         Think Before You Share
     </div>
     """, unsafe_allow_html=True)
 
 
-# =========================================================
-# 7. TRANG TỔNG QUAN
-# =========================================================
+# =====================================================
+# 7. TỔNG QUAN
+# =====================================================
 
 if menu == "🏠 Tổng quan":
 
@@ -473,39 +465,20 @@ if menu == "🏠 Tổng quan":
 
     st.markdown("## ✦ Tổng quan hoạt động")
 
-    col1, col2, col3 = st.columns(3)
+    a, b, c = st.columns(3)
 
-    with col1:
-        st.metric(
-            "Lượt phân tích",
-            st.session_state.analysis_count
-        )
+    a.metric("Lượt phân tích", st.session_state.analysis_count)
+    b.metric("Lượt kiểm chứng", st.session_state.verified_count)
+    c.metric("Lượt phản hồi", st.session_state.reflection_count)
 
-    with col2:
-        st.metric(
-            "Lượt kiểm chứng",
-            st.session_state.verified_count
-        )
-
-    with col3:
-        st.metric(
-            "Lượt phản hồi",
-            st.session_state.reflection_count
-        )
-
-    st.markdown("## ✦ Sáu khu vực chức năng")
+    st.markdown("## ✦ Các chức năng")
 
     features = [
-        ("🔍", "Phân tích thông tin bằng AI",
-         "Phân tích nội dung và nhận diện các dấu hiệu rủi ro."),
-        ("🛡️", "Phòng kiểm chứng",
-         "Hướng dẫn các bước kiểm tra thông tin."),
-        ("🎭", "Mô phỏng mạng xã hội",
-         "Thực hành xử lý các tình huống thông tin giả định."),
-        ("🧠", "Phản hồi thích ứng",
-         "Đưa ra câu hỏi và gợi ý cải thiện tư duy phản biện."),
-        ("📊", "Thống kê nghiên cứu",
-         "Theo dõi số lượt hoạt động và kết quả khảo sát.")
+        ("🔍", "Phân tích thông tin bằng AI", "Phân tích nội dung và nhận diện dấu hiệu rủi ro."),
+        ("🛡️", "Phòng kiểm chứng", "Hướng dẫn các bước xác minh thông tin."),
+        ("🎭", "Mô phỏng mạng xã hội", "Thực hành xử lý tình huống giả định."),
+        ("🧠", "Phản hồi thích ứng", "Đưa ra gợi ý rèn luyện tư duy phản biện."),
+        ("📊", "Thống kê nghiên cứu", "Theo dõi dữ liệu hoạt động.")
     ]
 
     for icon, title, description in features:
@@ -516,254 +489,205 @@ if menu == "🏠 Tổng quan":
         </div>
         """, unsafe_allow_html=True)
 
-    st.info("💡 Hãy luôn suy nghĩ và kiểm chứng trước khi chia sẻ bất kỳ thông tin nào.")
+    st.info("💡 Think Before You Share – Suy nghĩ trước khi chia sẻ.")
 
 
-# =========================================================
-# 8. PHÂN TÍCH THÔNG TIN BẰNG AI
-# =========================================================
+# =====================================================
+# 8. PHÂN TÍCH AI
+# =====================================================
 
 elif menu == "🔍 Phân tích thông tin bằng AI":
 
     st.markdown("# 🔍 Phân tích thông tin bằng AI")
+
     st.markdown(
-        '<p class="subtitle">PHÂN TÍCH DẤU HIỆU RỦI RO TRONG NỘI DUNG SỐ</p>',
+        '<p class="subtitle">DIGITAL CONTENT RISK ANALYSIS</p>',
         unsafe_allow_html=True
     )
 
     st.markdown("""
     <div class="glass-card">
-        <h3>📡 Hệ thống phân tích</h3>
-        <p>
-        Nhập một bài đăng, tin nhắn hoặc nội dung bất kỳ.
-        Hệ thống sẽ phân tích các dấu hiệu đáng chú ý
-        và đưa ra gợi ý kiểm chứng.
-        </p>
+        <h3>📡 Hệ thống phân tích nội dung</h3>
+        <p>Nhập bài đăng, tin nhắn hoặc thông tin cần kiểm tra.</p>
     </div>
     """, unsafe_allow_html=True)
 
     content = st.text_area(
-        "📄 Nhập nội dung cần phân tích:",
+        "📄 Nội dung cần phân tích:",
         height=200,
-        placeholder="Dán nội dung bài đăng hoặc tin nhắn vào đây..."
+        placeholder="Dán nội dung vào đây..."
     )
 
     if st.button("🚀 BẮT ĐẦU PHÂN TÍCH", use_container_width=True):
 
         if len(content.strip()) < 10:
-            st.warning("Em hãy nhập nội dung dài hơn để hệ thống phân tích nhé.")
+            st.warning("Vui lòng nhập nội dung dài hơn.")
         else:
-            with st.spinner("Đang phân tích nội dung..."):
 
-                result = basic_analysis(content)
+            with st.spinner("Đang phân tích..."):
+                score, level, found, advice = basic_analysis(content)
                 ai_result, error = gemini_analysis(content)
 
-                st.session_state.analysis_count += 1
+            st.session_state.analysis_count += 1
 
-                st.session_state.records.append({
-                    "Thời gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                    "Loại hoạt động": "Phân tích thông tin",
-                    "Điểm dấu hiệu": result["score"],
-                    "Mức đánh giá": result["level"]
-                })
+            st.session_state.records.append({
+                "Thời gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                "Hoạt động": "Phân tích thông tin",
+                "Điểm dấu hiệu": score,
+                "Kết quả": level
+            })
 
             st.markdown("---")
-            st.markdown("## ✦ KẾT QUẢ PHÂN TÍCH")
+            st.markdown("## ✦ KẾT QUẢ")
 
-            col1, col2 = st.columns(2)
+            c1, c2 = st.columns(2)
+            c1.metric("Điểm dấu hiệu", f"{score}/100")
+            c2.metric("Mức đánh giá", level)
 
-            with col1:
-                st.metric("Điểm dấu hiệu rủi ro", f'{result["score"]}/100')
+            st.caption("Điểm số là chỉ báo dựa trên nhóm từ khóa, không phải xác suất tin giả.")
 
-            with col2:
-                st.metric("Mức đánh giá", result["level"])
+            st.progress(score / 100)
 
-            st.caption(
-                "Điểm này phản ánh số nhóm dấu hiệu được phát hiện "
-                "bởi bộ từ khóa cơ bản, không phải xác suất thông tin giả."
-            )
+            st.markdown("### 🧩 Dấu hiệu phát hiện")
 
-            st.progress(result["score"] / 100)
-
-            st.markdown("### 🧩 Dấu hiệu được phát hiện")
-
-            if result["categories"]:
-                for item in result["categories"]:
+            if found:
+                for item in found:
                     st.warning(
-                        f'**{item["category"]}** — Từ khóa: '
+                        f'**{item["category"]}**: '
                         + ", ".join(item["keywords"])
                     )
             else:
-                st.success(
-                    "Chưa phát hiện nhóm từ khóa cảnh báo trong nội dung."
-                )
+                st.success("Chưa phát hiện nhóm từ khóa cảnh báo.")
 
-            st.markdown("### 💡 Khuyến nghị cơ bản")
-            st.info(result["advice"])
+            st.markdown("### 💡 Khuyến nghị")
+            st.info(advice)
 
-            st.markdown("---")
-            st.markdown("### 🤖 Phân tích từ Gemini AI")
+            st.markdown("### 🤖 Kết quả Gemini AI")
 
             if ai_result:
                 st.markdown(ai_result)
             else:
-                st.warning(error)
-                st.caption(
-                    "Em vẫn có thể sử dụng kết quả phân tích cơ bản ở phía trên."
-                )
+                st.warning(f"Gemini chưa hoạt động: {error}")
 
-            st.caption(
-                "Lưu ý: AI có thể mắc lỗi. Cần kiểm chứng bằng nguồn độc lập "
-                "trước khi kết luận thông tin đúng hay sai."
-            )
+            st.caption("AI có thể mắc lỗi. Hãy kiểm chứng bằng nguồn độc lập.")
 
 
-# =========================================================
+# =====================================================
 # 9. PHÒNG KIỂM CHỨNG
-# =========================================================
+# =====================================================
 
 elif menu == "🛡️ Phòng kiểm chứng":
 
-    st.markdown("# 🛡️ Phòng kiểm chứng thông tin")
-    st.markdown(
-        '<p class="subtitle">FIVE STEPS TO VERIFY INFORMATION</p>',
-        unsafe_allow_html=True
-    )
+    st.markdown("# 🛡️ Phòng kiểm chứng")
 
     st.markdown("""
     <div class="glass-card">
-        <h3>🔎 Quy trình 5 bước</h3>
-        <p>
-        Trước khi tin tưởng hoặc chia sẻ một thông tin,
-        hãy thực hiện lần lượt các bước dưới đây.
-        </p>
+        <h3>🔎 QUY TRÌNH 5 BƯỚC</h3>
+        <p>Thực hiện các bước sau trước khi tin tưởng hoặc chia sẻ thông tin.</p>
     </div>
     """, unsafe_allow_html=True)
 
     checklist = [
         "Kiểm tra người đăng và nguồn thông tin.",
-        "Xem thời gian đăng tải và bối cảnh của thông tin.",
-        "Tìm kiếm thông tin tương tự từ các nguồn độc lập.",
-        "Kiểm tra hình ảnh, video và bằng chứng đi kèm.",
-        "Đánh giá lại nội dung trước khi chia sẻ."
+        "Kiểm tra thời gian và bối cảnh.",
+        "Đối chiếu với các nguồn độc lập.",
+        "Kiểm tra hình ảnh, video và bằng chứng.",
+        "Đánh giá lại trước khi chia sẻ."
     ]
-
-    st.markdown("## ✦ Danh sách kiểm chứng")
 
     checked = []
 
     for i, item in enumerate(checklist):
-        value = st.checkbox(
-            f"BƯỚC {i + 1}: {item}",
-            key=f"verify_{i}"
+        checked.append(
+            st.checkbox(f"BƯỚC {i+1}: {item}", key=f"check_{i}")
         )
-        checked.append(value)
 
     completed = sum(checked)
-    st.progress(completed / len(checklist))
 
-    st.write(f"**Tiến độ hoàn thành: {completed}/5 bước**")
+    st.progress(completed / 5)
+    st.write(f"Tiến độ: {completed}/5")
 
     if completed == 5:
-        st.success("🎉 Em đã hoàn thành quy trình kiểm chứng!")
+        st.success("🎉 Đã hoàn thành quy trình!")
 
-    if st.button("✅ GHI NHẬN HOÀN THÀNH"):
+    if st.button("GHI NHẬN KẾT QUẢ"):
         if completed == 5:
             st.session_state.verified_count += 1
 
             st.session_state.records.append({
                 "Thời gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                "Loại hoạt động": "Kiểm chứng thông tin",
+                "Hoạt động": "Kiểm chứng",
                 "Điểm dấu hiệu": 0,
-                "Mức đánh giá": "Hoàn thành"
+                "Kết quả": "Hoàn thành"
             })
 
-            st.success("Đã ghi nhận kết quả kiểm chứng!")
+            st.success("Đã ghi nhận!")
         else:
-            st.warning("Em hãy hoàn thành cả 5 bước trước nhé.")
+            st.warning("Hãy hoàn thành đủ 5 bước.")
 
     st.markdown("---")
-    st.markdown("## ✦ Một số nguồn tham khảo")
+    st.markdown("### 🌐 Nguồn tham khảo")
 
     st.markdown("""
     - [Google Fact Check Explorer](https://toolbox.google.com/factcheck/explorer)
-    - [WHO - World Health Organization](https://www.who.int/)
+    - [WHO](https://www.who.int/)
     - [UNESCO](https://www.unesco.org/)
     """)
 
 
-# =========================================================
+# =====================================================
 # 10. MÔ PHỎNG MẠNG XÃ HỘI
-# =========================================================
+# =====================================================
 
 elif menu == "🎭 Mô phỏng mạng xã hội":
 
     st.markdown("# 🎭 Mô phỏng mạng xã hội")
-    st.markdown(
-        '<p class="subtitle">SIMULATED SOCIAL MEDIA ENVIRONMENT</p>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown("""
-    <div class="glass-card">
-        <h3>📱 Bảng tin mô phỏng</h3>
-        <p>
-        Em sẽ gặp các tình huống giả định giống với những nội dung
-        có thể xuất hiện trên mạng xã hội.
-        Hãy lựa chọn cách xử lý phù hợp.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
 
     scenarios = [
         {
             "title": "Tin nhắn khẩn cấp",
-            "content": "Một bài đăng nói rằng một sự kiện nguy hiểm sắp xảy ra và yêu cầu mọi người chia sẻ ngay lập tức. Bài đăng không dẫn nguồn cụ thể.",
+            "content": "Một bài đăng nói rằng một sự kiện nguy hiểm sắp xảy ra và yêu cầu chia sẻ ngay. Bài đăng không có nguồn cụ thể.",
             "question": "Em sẽ làm gì?",
             "options": [
-                "Chia sẻ ngay để cảnh báo mọi người.",
-                "Kiểm tra nguồn và tìm thông tin từ cơ quan đáng tin cậy.",
-                "Tin ngay vì bài đăng có nhiều lượt chia sẻ."
+                "Chia sẻ ngay.",
+                "Kiểm tra nguồn và thông tin chính thức.",
+                "Tin vì có nhiều lượt chia sẻ."
             ],
             "correct": 1,
-            "explanation": "Cần kiểm tra nguồn và đối chiếu với thông báo từ cơ quan có thẩm quyền. Lượt chia sẻ không chứng minh thông tin chính xác."
+            "explanation": "Cần kiểm tra nguồn và đối chiếu thông tin từ cơ quan đáng tin cậy."
         },
         {
             "title": "Hình ảnh gây tranh cãi",
-            "content": "Một hình ảnh đang được lan truyền với chú thích gây sốc. Không có thời gian, địa điểm hoặc nguồn gốc hình ảnh.",
-            "question": "Em nên làm gì trước tiên?",
+            "content": "Một hình ảnh được lan truyền với chú thích gây sốc nhưng không có nguồn gốc.",
+            "question": "Em nên làm gì?",
             "options": [
-                "Tin vào chú thích của người đăng.",
-                "Chia sẻ để hỏi ý kiến bạn bè.",
-                "Tìm nguồn gốc hình ảnh và kiểm tra bối cảnh."
+                "Tin chú thích.",
+                "Chia sẻ ngay.",
+                "Tìm nguồn gốc và kiểm tra bối cảnh."
             ],
             "correct": 2,
-            "explanation": "Hình ảnh có thể bị sử dụng sai bối cảnh. Cần tìm nguồn gốc và thông tin liên quan trước khi kết luận."
+            "explanation": "Hình ảnh có thể bị sử dụng sai bối cảnh."
         },
         {
             "title": "Thông tin từ người nổi tiếng",
-            "content": "Một tài khoản có nhiều người theo dõi đăng thông tin về một vấn đề nhưng không đưa ra bằng chứng.",
-            "question": "Lượt theo dõi cao có đủ để chứng minh thông tin đúng không?",
+            "content": "Một tài khoản có nhiều người theo dõi đăng thông tin nhưng không đưa bằng chứng.",
+            "question": "Lượt theo dõi cao có chứng minh thông tin đúng không?",
             "options": [
-                "Có, vì người nổi tiếng thường đáng tin.",
-                "Không, cần kiểm tra bằng chứng và nguồn độc lập.",
-                "Có, nếu nhiều người bình luận đồng ý."
+                "Có.",
+                "Không, cần kiểm tra bằng chứng.",
+                "Có nếu nhiều người đồng ý."
             ],
             "correct": 1,
-            "explanation": "Độ nổi tiếng và số lượng bình luận không thay thế được bằng chứng xác thực."
+            "explanation": "Độ nổi tiếng không thay thế bằng chứng xác thực."
         }
     ]
 
-    scenario_names = [s["title"] for s in scenarios]
-
-    selected_scenario = st.selectbox(
-        "Chọn tình huống mô phỏng:",
-        scenario_names
+    selected = st.selectbox(
+        "Chọn tình huống:",
+        [s["title"] for s in scenarios]
     )
 
-    scenario = next(
-        s for s in scenarios if s["title"] == selected_scenario
-    )
+    scenario = next(s for s in scenarios if s["title"] == selected)
 
     st.markdown(f"""
     <div class="glass-card">
@@ -777,17 +701,18 @@ elif menu == "🎭 Mô phỏng mạng xã hội":
     answer = st.radio(
         "Lựa chọn của em:",
         scenario["options"],
-        key=f"scenario_{selected_scenario}"
+        key=f"answer_{selected}"
     )
 
-    if st.button("GỬI LỰA CHỌN", use_container_width=True):
+    if st.button("GỬI LỰA CHỌN"):
 
-        answer_index = scenario["options"].index(answer)
+        index = scenario["options"].index(answer)
+        correct = index == scenario["correct"]
 
-        if answer_index == scenario["correct"]:
-            st.success("🎉 Chính xác! Em đã lựa chọn cách xử lý phù hợp.")
+        if correct:
+            st.success("🎉 Chính xác!")
         else:
-            st.warning("Chưa chính xác. Em hãy thử suy nghĩ lại nhé.")
+            st.warning("Chưa chính xác, hãy thử suy nghĩ lại.")
 
         st.info(scenario["explanation"])
 
@@ -795,149 +720,112 @@ elif menu == "🎭 Mô phỏng mạng xã hội":
 
         st.session_state.records.append({
             "Thời gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "Loại hoạt động": "Mô phỏng mạng xã hội",
-            "Điểm dấu hiệu": 100 if answer_index == scenario["correct"] else 0,
-            "Mức đánh giá": "Trả lời đúng" if answer_index == scenario["correct"] else "Cần cải thiện"
+            "Hoạt động": "Mô phỏng",
+            "Điểm dấu hiệu": 100 if correct else 0,
+            "Kết quả": "Đúng" if correct else "Cần cải thiện"
         })
 
 
-# =========================================================
+# =====================================================
 # 11. PHẢN HỒI THÍCH ỨNG
-# =========================================================
+# =====================================================
 
 elif menu == "🧠 Phản hồi thích ứng":
 
     st.markdown("# 🧠 Phản hồi thích ứng")
-    st.markdown(
-        '<p class="subtitle">ADAPTIVE FEEDBACK ENGINE</p>',
-        unsafe_allow_html=True
-    )
 
     st.markdown("""
     <div class="glass-card">
-        <h3>💭 Không chỉ nhận diện, mà còn học cách suy nghĩ</h3>
+        <h3>💭 ADAPTIVE FEEDBACK ENGINE</h3>
         <p>
-        Khu vực này giúp học sinh tự đánh giá thói quen tiếp nhận thông tin
-        và xây dựng cách xử lý phù hợp hơn.
+        Đánh giá thói quen tiếp nhận thông tin và nhận phản hồi
+        nhằm rèn luyện tư duy phản biện.
         </p>
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("## ✦ Tự đánh giá hành vi")
-
     q1 = st.radio(
-        "1. Khi gặp một thông tin gây sốc, em thường làm gì?",
+        "1. Khi gặp thông tin gây sốc, em thường:",
         [
             "Chia sẻ ngay",
-            "Đọc bình luận trước",
+            "Đọc bình luận",
             "Kiểm tra nguồn trước khi tin"
         ]
     )
 
     q2 = st.radio(
-        "2. Nếu một thông tin được nhiều người chia sẻ, em nghĩ gì?",
+        "2. Khi một thông tin được nhiều người chia sẻ:",
         [
             "Chắc chắn là đúng",
-            "Có thể đúng nhưng cần kiểm chứng",
-            "Không cần quan tâm đến nguồn"
+            "Cần kiểm chứng thêm",
+            "Không cần quan tâm nguồn"
         ]
     )
 
     q3 = st.radio(
-        "3. Khi phát hiện mình đã chia sẻ thông tin chưa chính xác, em sẽ:",
+        "3. Nếu phát hiện đã chia sẻ thông tin chưa chính xác:",
         [
             "Bỏ qua",
-            "Xóa hoặc đính chính thông tin",
+            "Đính chính thông tin",
             "Tiếp tục chia sẻ"
         ]
     )
 
     if st.button("📩 NHẬN PHẢN HỒI", use_container_width=True):
 
-        score = 0
-
-        if q1 == "Kiểm tra nguồn trước khi tin":
-            score += 1
-
-        if q2 == "Có thể đúng nhưng cần kiểm chứng":
-            score += 1
-
-        if q3 == "Xóa hoặc đính chính thông tin":
-            score += 1
+        score = sum([
+            q1 == "Kiểm tra nguồn trước khi tin",
+            q2 == "Cần kiểm chứng thêm",
+            q3 == "Đính chính thông tin"
+        ])
 
         st.session_state.reflection_count += 1
 
         st.session_state.records.append({
             "Thời gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "Loại hoạt động": "Tự đánh giá hành vi",
+            "Hoạt động": "Tự đánh giá",
             "Điểm dấu hiệu": score,
-            "Mức đánh giá": f"{score}/3 câu phù hợp"
+            "Kết quả": f"{score}/3"
         })
-
-        st.markdown("---")
-        st.markdown("## ✦ Kết quả phản hồi")
 
         st.metric("Số lựa chọn phù hợp", f"{score}/3")
 
         if score == 3:
-            st.success(
-                "🌟 Rất tốt! Em đã thể hiện thói quen tiếp nhận thông tin có trách nhiệm."
-            )
+            st.success("🌟 Rất tốt! Em đã có thói quen tiếp nhận thông tin có trách nhiệm.")
         elif score == 2:
-            st.info(
-                "💡 Em đã có nền tảng tốt. Hãy chú ý kiểm chứng nguồn trước khi chia sẻ."
-            )
+            st.info("💡 Em đã có nền tảng tốt. Hãy tiếp tục kiểm chứng nguồn.")
         else:
-            st.warning(
-                "🔎 Em nên dành thêm thời gian rèn luyện kỹ năng kiểm chứng và tư duy phản biện."
-            )
+            st.warning("🔎 Em nên rèn luyện thêm kỹ năng kiểm chứng.")
 
         st.markdown("### 💬 Câu hỏi suy ngẫm")
 
         st.write(
-            "Nếu một thông tin khiến em rất tức giận hoặc lo lắng, "
+            "Nếu một thông tin khiến em tức giận hoặc lo lắng, "
             "em có nên chia sẻ ngay không? Vì sao?"
         )
 
-        st.caption(
-            "Hãy nhớ: cảm xúc mạnh không phải là bằng chứng cho tính chính xác của thông tin."
-        )
 
-
-# =========================================================
+# =====================================================
 # 12. THỐNG KÊ NGHIÊN CỨU
-# =========================================================
+# =====================================================
 
 elif menu == "📊 Thống kê nghiên cứu":
 
     st.markdown("# 📊 Thống kê nghiên cứu")
-    st.markdown(
-        '<p class="subtitle">RESEARCH DATA & ACTIVITY ANALYTICS</p>',
-        unsafe_allow_html=True
-    )
 
     st.markdown("""
     <div class="glass-card">
-        <h3>📈 Bảng điều khiển dữ liệu</h3>
-        <p>
-        Theo dõi số lượt hoạt động được ghi nhận trong phiên sử dụng hiện tại.
-        </p>
+        <h3>📈 RESEARCH DATA ANALYTICS</h3>
+        <p>Theo dõi hoạt động của hệ thống trong phiên sử dụng hiện tại.</p>
     </div>
     """, unsafe_allow_html=True)
 
-    col1, col2, col3, col4 = st.columns(4)
+    a, b, c, d = st.columns(4)
 
-    with col1:
-        st.metric("Phân tích", st.session_state.analysis_count)
-
-    with col2:
-        st.metric("Kiểm chứng", st.session_state.verified_count)
-
-    with col3:
-        st.metric("Phản hồi", st.session_state.reflection_count)
-
-    with col4:
-        st.metric("Mô phỏng", st.session_state.scenario_done)
+    a.metric("Phân tích", st.session_state.analysis_count)
+    b.metric("Kiểm chứng", st.session_state.verified_count)
+    c.metric("Phản hồi", st.session_state.reflection_count)
+    d.metric("Mô phỏng", st.session_state.scenario_done)
 
     st.markdown("---")
     st.markdown("## ✦ Dữ liệu hoạt động")
@@ -946,33 +834,18 @@ elif menu == "📊 Thống kê nghiên cứu":
 
         df = pd.DataFrame(st.session_state.records)
 
-        st.dataframe(
-            df,
-            use_container_width=True,
-            hide_index=True
-        )
+        st.dataframe(df, use_container_width=True, hide_index=True)
 
         st.markdown("## ✦ Biểu đồ hoạt động")
 
-        activity_counts = (
-            df["Loại hoạt động"]
-            .value_counts()
-            .reset_index()
-        )
+        chart = df["Hoạt động"].value_counts()
 
-        activity_counts.columns = ["Hoạt động", "Số lượt"]
+        st.bar_chart(chart)
 
-        st.bar_chart(
-            activity_counts.set_index("Hoạt động")
-        )
-
-        csv = df.to_csv(
-            index=False,
-            encoding="utf-8-sig"
-        )
+        csv = df.to_csv(index=False, encoding="utf-8-sig")
 
         st.download_button(
-            label="⬇️ TẢI DỮ LIỆU NGHIÊN CỨU (CSV)",
+            "⬇️ TẢI DỮ LIỆU CSV",
             data=csv,
             file_name="social_sandbox_data.csv",
             mime="text/csv",
@@ -980,39 +853,31 @@ elif menu == "📊 Thống kê nghiên cứu":
         )
 
     else:
-        st.info(
-            "Chưa có dữ liệu. Em hãy trải nghiệm các chức năng "
-            "để hệ thống bắt đầu ghi nhận hoạt động."
-        )
-
-    st.markdown("---")
+        st.info("Chưa có dữ liệu. Hãy trải nghiệm các chức năng trước nhé.")
 
     st.caption(
-        "Lưu ý: Dữ liệu hiện được lưu trong session của ứng dụng. "
-        "Khi phiên sử dụng kết thúc hoặc ứng dụng khởi động lại, "
-        "dữ liệu có thể không còn. Đây chưa phải hệ thống lưu trữ lâu dài."
+        "Dữ liệu hiện chỉ lưu trong phiên sử dụng, "
+        "chưa được lưu trữ lâu dài."
     )
 
 
-# =========================================================
+# =====================================================
 # 13. CHÂN TRANG
-# =========================================================
+# =====================================================
 
 st.markdown("---")
 
 st.markdown("""
 <div style="
     text-align:center;
-    padding:20px;
+    padding:25px;
     color:#CADCFC;
     font-size:12px;
 ">
-    <div style="font-size:22px;">🌌</div>
+    <div style="font-size:28px;">🌌</div>
     <b>SOCIAL SANDBOX AI</b><br>
     DIGITAL LITERACY LAB<br><br>
     THINK BEFORE YOU SHARE<br>
-    <span style="opacity:.7;">
-        Educational Research Project • Version 2.0
-    </span>
+    EDUCATIONAL RESEARCH PROJECT • VERSION 2.1
 </div>
 """, unsafe_allow_html=True)
