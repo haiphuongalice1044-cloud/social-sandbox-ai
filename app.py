@@ -94,3 +94,4 @@ section[data-testid="stSidebar"] * {
 /* LIGHT CARDS */
 .light-card {
     background:linear-gradient(145deg,#FFFFFF,#EDF4FF);
+    
