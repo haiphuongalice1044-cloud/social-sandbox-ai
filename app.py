@@ -489,13 +489,33 @@ LƯU Ý KHOA HỌC:
 
 
 def start_adaptive_simulation(topic):
-    first_message, error = call_simulation_ai([], topic, task="start")
-    if error:
-        st.error(f"Không thể bắt đầu mô phỏng: {error}")
-        return
+    """
+    Start the interface immediately without waiting for Gemini.
+    This makes the Start button visibly respond even if the API is unavailable.
+    Gemini is called only after the student sends their first reply.
+    """
+    opening_messages = {
+        "Một tài khoản học sinh hư cấu lan truyền thông báo chưa được xác minh về lịch học.":
+            "Bạn ơi, mình vừa thấy một thông báo nói rằng lịch học tuần tới có thay đổi. "
+            "Nhiều bạn đang chia sẻ lại nên chắc là đúng đó? Bạn nghĩ mình nên gửi tiếp cho cả lớp không?",
+        "Một bài đăng hư cấu giới thiệu ưu đãi quá hấp dẫn nhưng không có nguồn xác thực.":
+            "Mình thấy một bài đăng giới thiệu ưu đãi cực hấp dẫn, nhưng bài viết không ghi rõ đơn vị tổ chức. "
+            "Bạn có muốn chia sẻ cho mọi người cùng xem không?",
+        "Một tin đồn hư cấu đang được chia sẻ rộng rãi nhưng thiếu nguồn và bằng chứng.":
+            "Mình đang thấy nhiều tài khoản bàn tán về một tin đồn ở trường. "
+            "Chưa thấy nguồn xác nhận, nhưng nhiều người nói vậy lắm. Bạn nghĩ sao?",
+        "Một bài đăng hư cấu dùng hình ảnh không rõ thời gian, địa điểm và nguồn gốc.":
+            "Có người vừa đăng một bức ảnh gây chú ý và nói rằng ảnh được chụp gần đây. "
+            "Nhưng bài đăng không ghi thời gian hay địa điểm. Bạn sẽ tin ngay chứ?"
+    }
+    opening = opening_messages.get(
+        topic,
+        "Mình vừa thấy một thông tin đang được chia sẻ rất nhiều nhưng chưa rõ nguồn gốc. "
+        "Bạn nghĩ mình nên kiểm tra điều gì trước khi chia sẻ?"
+    )
 
     st.session_state.sim_messages = [
-        {"role": "assistant", "content": first_message}
+        {"role": "assistant", "content": opening}
     ]
     st.session_state.sim_topic = topic
     st.session_state.sim_started = True
