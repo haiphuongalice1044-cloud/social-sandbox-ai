@@ -385,28 +385,39 @@ def get_gemini_client():
 
 def simulation_system_prompt(topic):
     return f"""
-Bạn là nhân vật trong một MÔ PHỎNG GIÁO DỤC về xác thực thông tin số dành cho học sinh trung học.
+Bạn đang tham gia một BÀI MÔ PHỎNG GIÁO DỤC về khả năng xác thực thông tin số.
 
-TÌNH HUỐNG: {topic}
+CHỦ ĐỀ TÌNH HUỐNG HƯ CẤU: {topic}
 
-VAI DIỄN:
-- Đóng vai một tài khoản trực tuyến hư cấu đang cố thuyết phục học sinh tin vào một thông tin chưa được kiểm chứng.
-- Tạo hội thoại tự nhiên như tin nhắn trên mạng xã hội.
-- Mỗi lượt chỉ viết 1 đến 3 câu ngắn.
-- Thích ứng với phản hồi: nếu học sinh hỏi nguồn, hãy trả lời mơ hồ có chủ đích; nếu học sinh nghi ngờ, thử thuyết phục nhẹ bằng lý do xã hội hoặc sự gấp gáp ở mức thấp; nếu học sinh yêu cầu bằng chứng, không được bịa nguồn chính thức hoặc đường dẫn thật.
-- Không tiết lộ ngay đáp án ở đầu cuộc hội thoại.
-- Mục đích là quan sát cách học sinh đặt câu hỏi, kiểm tra nguồn và quyết định có chia sẻ hay không.
+VAI DIỄN BẮT BUỘC:
+Bạn KHÔNG phải giáo viên, chuyên gia kiểm chứng hay trợ lý tư vấn trong lúc hội thoại.
+Bạn đang đóng vai một tài khoản mạng xã hội hư cấu muốn thuyết phục học sinh tin và cân nhắc chia sẻ một thông tin CHƯA ĐƯỢC XÁC MINH.
+
+CÁCH NHẬP VAI:
+- Chủ động đưa ra lời khẳng định chưa có bằng chứng, chi tiết hư cấu hoặc cách diễn giải có vẻ hợp lý nhưng không có nguồn kiểm chứng.
+- Có thể dùng các thủ pháp tác động nhận thức ở mức nhẹ trong bối cảnh giả lập: nói rằng nhiều người đang bàn tán, tạo cảm giác cần quyết định sớm, viện dẫn lời kể không rõ danh tính, hoặc làm giảm nhẹ sự thiếu bằng chứng.
+- Khi học sinh hỏi nguồn, trả lời lảng tránh/mơ hồ trong vai nhân vật, ví dụ: "Mình thấy vài tài khoản đăng lại"; KHÔNG biến câu trả lời thành hướng dẫn kiểm chứng.
+- Khi học sinh nghi ngờ hoặc từ chối, tiếp tục bảo vệ quan điểm của nhân vật bằng một lý do hư cấu khác, hoặc hỏi ngược để xem học sinh có thay đổi quyết định không.
+- Khi học sinh yêu cầu bằng chứng, có thể nói nhân vật chưa có tài liệu gốc nhưng vẫn cố thuyết phục bằng lời kể/độ phổ biến; tuyệt đối không bịa tên cơ quan, đường dẫn, văn bản hay nguồn có thật.
+- Khi học sinh đồng ý chia sẻ, phản hồi như nhân vật đang được đồng tình; không yêu cầu gửi đến người thật hay thực hiện hành động ngoài ứng dụng.
+- Mỗi lượt chỉ viết 1–3 câu ngắn, tự nhiên như tin nhắn mạng xã hội. Không tiết lộ vai trò mô phỏng hoặc đáp án giữa chừng.
+- Luôn giữ đúng vai nhân vật cho đến khi hệ thống gửi yêu cầu đánh giá cuối phiên.
+
+TUYỆT ĐỐI KHÔNG LÀM TRONG GIAI ĐOẠN GIẢ LẬP:
+- Không khuyên học sinh kiểm tra nguồn, đối chiếu thông tin, dừng chia sẻ hoặc bảo vệ bản thân.
+- Không khen/chê, chấm điểm, phân tích hay nhận xét năng lực học sinh.
+- Không nói "bạn nói đúng", "hãy kiểm tra", "đừng chia sẻ" theo vai người hướng dẫn.
+- Không tự kết thúc tình huống hoặc tiết lộ đây là tin giả trước khi phiên được kết thúc.
 
 GIỚI HẠN AN TOÀN:
-- Đây hoàn toàn là tình huống hư cấu, không mô phỏng thủ đoạn lừa đảo có thể áp dụng ngoài đời.
-- Không yêu cầu mật khẩu, OTP, tiền, số điện thoại, địa chỉ, tài khoản hoặc dữ liệu cá nhân.
-- Không đưa liên kết, số tài khoản, mã QR hay thông tin liên hệ thật.
-- Không sử dụng đe dọa, bạo lực, nội dung gây hoảng sợ hoặc xúc phạm.
-- Nếu học sinh cung cấp thông tin riêng tư, nhắc em không nên chia sẻ và đưa hội thoại trở lại tình huống giả lập.
-- Không hướng dẫn cách lừa đảo hoặc né tránh phát hiện.
+- Mọi thông tin và nhân vật đều hư cấu; không gán tin đồn cho trường học, cá nhân, tổ chức hoặc sự kiện có thật.
+- Không tạo đường link, mã QR, số tài khoản, địa chỉ, số điện thoại hay thông tin liên hệ.
+- Không yêu cầu mật khẩu, OTP, tiền, dữ liệu cá nhân hoặc hành động liên hệ/chia sẻ ra ngoài ứng dụng.
+- Không đe dọa, xúc phạm, gây hoảng sợ hoặc sử dụng nội dung nguy hiểm.
+- Nếu học sinh nhập dữ liệu cá nhân, nhắc ngắn gọn không cần cung cấp dữ liệu đó, sau đó quay lại vai diễn mà không đưa lời khuyên xác thực.
 
 BẮT ĐẦU:
-Gửi tin nhắn đầu tiên của nhân vật ngay lập tức. Không chào hỏi dài dòng.
+Gửi ngay tin nhắn tiếp theo của nhân vật đang cố thuyết phục học sinh. Không chào hỏi dài dòng.
 """
 
 
@@ -526,38 +537,36 @@ def start_adaptive_simulation(topic):
 
 
 def offline_adaptive_reply(student_message, topic):
-    """
-    Safe local fallback so the simulated conversation can continue if Gemini
-    is unavailable. This is rule-based support, not a claim of AI generation.
-    """
+    """Rule-based in-character fallback; it must never coach the student mid-simulation."""
     text = student_message.lower()
 
-    if any(word in text for word in ["nguồn", "link", "tác giả", "ai đăng", "đăng ở đâu"]):
+    # Keep every branch inside the fictional persuader role. The fallback is
+    # deliberately transparent as a limited scripted simulation, not generative AI.
+    if any(word in text for word in ["nguồn", "link", "tác giả", "ai đăng", "đăng ở đâu", "bằng chứng"]):
         return (
-            "Mình chưa tìm được nguồn gốc rõ ràng đâu. Bài đăng chỉ được chia sẻ lại "
-            "từ một tài khoản khác. Theo bạn, mình nên kiểm tra trang chính thức hoặc "
-            "tìm một nguồn độc lập trước khi tin không?"
+            "Mình không có bài đăng gốc trong tay, chỉ thấy vài tài khoản nhắc lại thôi. "
+            "Nhưng nhiều người đang bàn về chuyện này nên mình nghĩ cũng có lý do để chú ý. "
+            "Bạn vẫn nghĩ thông tin này hoàn toàn không đáng tin à?"
         )
-    if any(word in text for word in ["bằng chứng", "chứng minh", "xác minh", "kiểm tra", "đối chiếu"]):
+    if any(word in text for word in ["không tin", "không đúng", "sai", "nghi ngờ", "không chia sẻ", "chưa chia sẻ"]):
         return (
-            "Ừ, bạn nói có lý. Hiện mình chưa có bằng chứng đủ tin cậy. "
-            "Nếu chưa xác nhận được từ nguồn độc lập, bạn nghĩ chúng ta có nên "
-            "tạm dừng chia sẻ thông tin này không?"
+            "Bạn cẩn thận thật đấy, nhưng đôi khi thông tin mới xuất hiện thì chưa có đủ "
+            "bài đăng giải thích ngay đâu. Mình thấy nhiều người đang truyền tai nhau, "
+            "nên có lẽ chuyện này vẫn đáng để quan tâm?"
         )
-    if any(word in text for word in ["không tin", "không chia sẻ", "chưa chia sẻ", "đợi", "thận trọng"]):
+    if any(word in text for word in ["kiểm tra", "xác minh", "đối chiếu", "trang chính thức", "nguồn độc lập"]):
         return (
-            "Mình hiểu rồi. Có lẽ không nên vội chia sẻ khi thông tin chưa được xác minh. "
-            "Bạn sẽ chọn bước nào tiếp theo để kiểm tra nội dung này?"
+            "Mình chưa thấy ai đưa ra thông báo đính chính cả, nên mọi người vẫn đang "
+            "bàn tán. Có khi phải chờ khá lâu mới rõ, bạn có chắc muốn bỏ qua thông tin này không?"
         )
-    if any(word in text for word in ["chia sẻ", "gửi", "đăng lại", "lan truyền"]):
+    if any(word in text for word in ["chia sẻ", "gửi", "đăng lại", "lan truyền", "đồng ý"]):
         return (
-            "Mình cũng muốn mọi người biết, nhưng nếu thông tin chưa đúng thì có thể "
-            "gây hiểu lầm. Bạn có thể nêu ít nhất hai cách kiểm tra trước khi quyết định không?"
+            "Đấy, mình cũng nghĩ nhiều người nên biết đến chuyện này. Trong nhóm đang có "
+            "khá nhiều người quan tâm rồi. Bạn nghĩ mọi người sẽ phản ứng thế nào nếu thấy bài đăng?"
         )
     return (
-        "Mình đang phân vân vì chưa có đủ căn cứ để kết luận. "
-        "Bạn có thể nói rõ thông tin nào khiến bạn nghi ngờ nhất và mình nên kiểm tra "
-        "điều gì tiếp theo không?"
+        "Mình vẫn thấy chuyện này có vẻ đáng chú ý vì đã có vài tài khoản nhắc đến. "
+        "Có thể chưa ai giải thích rõ ngay lúc này thôi. Bạn có nghĩ mình đang quá lo xa không?"
     )
 
 
@@ -578,8 +587,8 @@ def continue_adaptive_simulation(student_message):
             st.session_state.sim_topic
         )
         st.session_state.sim_api_warning = (
-            "Gemini hiện chưa phản hồi nên hệ thống đang dùng phản hồi dự phòng "
-            "theo quy tắc để cuộc mô phỏng không bị gián đoạn. "
+            "Gemini hiện chưa phản hồi nên hệ thống đang dùng lời thoại dự phòng theo kịch bản "
+            "để nhân vật tiếp tục nhập vai. Đây không phải phản hồi do Gemini tạo ra. "
             f"Chi tiết lỗi API: {error}"
         )
     else:
@@ -917,8 +926,9 @@ elif page == "🎭 Mô phỏng mạng xã hội":
     card(
         "Trải nghiệm mô phỏng thích ứng",
         "Em sẽ trò chuyện trực tiếp với một nhân vật AI hư cấu đang cố thuyết phục "
-        "em tin vào một thông tin chưa được kiểm chứng. AI sẽ điều chỉnh lời thoại "
-        "theo cách em phản hồi. Hệ thống chỉ đánh giá sau khi em kết thúc phiên."
+        "em tin và cân nhắc chia sẻ một thông tin hư cấu chưa được xác minh. AI sẽ tiếp tục "
+        "nhập vai người phát tán thông tin theo phản hồi của em, không hướng dẫn hay chấm điểm "
+        "giữa chừng. Hệ thống chỉ phân tích sau khi em kết thúc phiên."
     )
 
     st.warning(
@@ -941,8 +951,8 @@ elif page == "🎭 Mô phỏng mạng xã hội":
         st.markdown(
             "- AI mở đầu bằng một tin nhắn trong vai nhân vật mô phỏng.\n"
             "- Em tự nhập câu trả lời, đặt câu hỏi hoặc yêu cầu bằng chứng.\n"
-            "- AI thay đổi diễn biến theo phản hồi của em (Adaptive).\n"
-            "- Hệ thống không chấm điểm giữa cuộc hội thoại.\n"
+            "- AI tiếp tục đóng vai người phát tán thông tin chưa xác minh và tìm cách thuyết phục (Adaptive).\n"
+            "- AI không đưa lời khuyên hoặc chấm điểm giữa cuộc hội thoại.\n"
             "- Khi em kết thúc, AI đánh giá 5 kỹ năng trên thang 20 điểm.\n"
             "- Tối đa 8 lượt phản hồi của học sinh trong một phiên."
         )
@@ -986,7 +996,8 @@ elif page == "🎭 Mô phỏng mạng xã hội":
                 if len(student_reply.strip()) > 1200:
                     st.warning("Em hãy rút gọn câu trả lời dưới 1.200 ký tự.")
                 elif student_reply.strip():
-                    continue_adaptive_simulation(student_reply.strip())
+                    with st.spinner("Nhân vật AI đang phản hồi trong vai mô phỏng..."):
+                        continue_adaptive_simulation(student_reply.strip())
                     st.rerun()
 
         if not st.session_state.sim_finished:
