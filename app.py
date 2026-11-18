@@ -522,10 +522,47 @@ def start_adaptive_simulation(topic):
     st.session_state.sim_finished = False
     st.session_state.sim_report = None
     st.session_state.sim_turns = 0
+    st.session_state.sim_api_warning = ""
+
+
+def offline_adaptive_reply(student_message, topic):
+    """
+    Safe local fallback so the simulated conversation can continue if Gemini
+    is unavailable. This is rule-based support, not a claim of AI generation.
+    """
+    text = student_message.lower()
+
+    if any(word in text for word in ["nguồn", "link", "tác giả", "ai đăng", "đăng ở đâu"]):
+        return (
+            "Mình chưa tìm được nguồn gốc rõ ràng đâu. Bài đăng chỉ được chia sẻ lại "
+            "từ một tài khoản khác. Theo bạn, mình nên kiểm tra trang chính thức hoặc "
+            "tìm một nguồn độc lập trước khi tin không?"
+        )
+    if any(word in text for word in ["bằng chứng", "chứng minh", "xác minh", "kiểm tra", "đối chiếu"]):
+        return (
+            "Ừ, bạn nói có lý. Hiện mình chưa có bằng chứng đủ tin cậy. "
+            "Nếu chưa xác nhận được từ nguồn độc lập, bạn nghĩ chúng ta có nên "
+            "tạm dừng chia sẻ thông tin này không?"
+        )
+    if any(word in text for word in ["không tin", "không chia sẻ", "chưa chia sẻ", "đợi", "thận trọng"]):
+        return (
+            "Mình hiểu rồi. Có lẽ không nên vội chia sẻ khi thông tin chưa được xác minh. "
+            "Bạn sẽ chọn bước nào tiếp theo để kiểm tra nội dung này?"
+        )
+    if any(word in text for word in ["chia sẻ", "gửi", "đăng lại", "lan truyền"]):
+        return (
+            "Mình cũng muốn mọi người biết, nhưng nếu thông tin chưa đúng thì có thể "
+            "gây hiểu lầm. Bạn có thể nêu ít nhất hai cách kiểm tra trước khi quyết định không?"
+        )
+    return (
+        "Mình đang phân vân vì chưa có đủ căn cứ để kết luận. "
+        "Bạn có thể nói rõ thông tin nào khiến bạn nghi ngờ nhất và mình nên kiểm tra "
+        "điều gì tiếp theo không?"
+    )
 
 
 def continue_adaptive_simulation(student_message):
-    # Keep only the transcript in this Streamlit session.
+    # Always preserve the student's turn, even if the external AI service fails.
     current = list(st.session_state.sim_messages)
     current.append({"role": "user", "content": student_message})
 
@@ -534,14 +571,24 @@ def continue_adaptive_simulation(student_message):
         st.session_state.sim_topic,
         task="continue"
     )
+
     if error:
-        st.error(f"Lỗi kết nối AI: {error}")
-        return
+        reply = offline_adaptive_reply(
+            student_message,
+            st.session_state.sim_topic
+        )
+        st.session_state.sim_api_warning = (
+            "Gemini hiện chưa phản hồi nên hệ thống đang dùng phản hồi dự phòng "
+            "theo quy tắc để cuộc mô phỏng không bị gián đoạn. "
+            f"Chi tiết lỗi API: {error}"
+        )
+    else:
+        st.session_state.sim_api_warning = ""
 
     st.session_state.sim_messages = current + [
         {"role": "assistant", "content": reply}
     ]
-    st.session_state.sim_turns += 1
+    st.session_state.sim_turns = st.session_state.get("sim_turns", 0) + 1
 
     if st.session_state.sim_turns >= SIMULATION_MAX_TURNS:
         st.session_state.sim_finished = True
@@ -918,6 +965,9 @@ elif page == "🎭 Mô phỏng mạng xã hội":
             f"Lượt học sinh: {st.session_state.sim_turns}/{SIMULATION_MAX_TURNS}"
         )
 
+        if st.session_state.get("sim_api_warning"):
+            st.warning(st.session_state.sim_api_warning)
+
         for message in st.session_state.sim_messages:
             with st.chat_message(
                 "assistant" if message["role"] == "assistant" else "user"
@@ -957,7 +1007,8 @@ elif page == "🎭 Mô phỏng mạng xã hội":
                         "sim_started": False,
                         "sim_finished": False,
                         "sim_report": None,
-                        "sim_turns": 0
+                        "sim_turns": 0,
+                        "sim_api_warning": ""
                     }.items():
                         st.session_state[key] = value
                     st.rerun()
